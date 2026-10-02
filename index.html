@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Show Tasks">
+<meta name="theme-color" content="#10131a">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Show Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one-column phone app, dark by design so it doesn't glow in the wings.
+   Each show section carries its own spike-tape colour. */
+:root{
+  color-scheme:dark;
+  --bg:#10131a; --surface:#181d28; --raised:#222a3b; --line:#2f3850;
+  --fg:#eef1f7; --muted:#949db1; --accent:#f2c94c; --on-accent:#1b1504; --danger:#ff6b6b;
+  --pre:#5aa9ff; --a1:#ff9f43; --a2:#d68cff; --post:#4fd1a5;
+  --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:12px;
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
+html{padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
+body{margin:0}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:8px;
+  padding:10px 16px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar h1{flex:1;min-width:0;margin:0;font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
+.bar .back{border:0;background:none;color:var(--accent);font-weight:600;padding:6px 4px;font-size:17px}
+.mock{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);border-radius:4px;padding:2px 6px}
+
+main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+.screen{display:flex;flex-direction:column;gap:22px}
+.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+h2.label{margin:0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:13px;color:var(--muted);font-weight:600}
+.input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:17px;width:100%;box-sizing:border-box}
+.input::placeholder{color:#636c80}
+textarea.input{resize:vertical;min-height:84px}
+
+/* section buttons */
+.secgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.secbtn{position:relative;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
+  padding:14px 14px 12px 20px;display:flex;flex-direction:column;gap:2px;min-height:88px;overflow:hidden}
+.secbtn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--c)}
+.secbtn .nm{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+.secbtn .ct{color:var(--muted);font-size:14px}
+.secbtn[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,var(--surface))}
+.secbtn[aria-pressed="true"] .ct{color:var(--fg)}
+
+.addpanel{border-color:var(--c)}
+.addhead{display:flex;align-items:center;gap:8px;font-weight:600}
+.dot{width:12px;height:12px;border-radius:3px;background:var(--c);flex:none}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.row2{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row2 .field{flex:1;min-width:130px}
+
+.btn{border:1px solid var(--line);background:var(--raised);border-radius:10px;padding:11px 16px;font-weight:600;font-size:16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.big{padding:14px 18px;font-size:18px}
+.btn.wide{width:100%}
+.btn.danger{color:var(--danger)}
+.btn.armed{background:var(--danger);border-color:var(--danger);color:#1a0505}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.recent li{font-size:15px;color:var(--muted);border-left:3px solid var(--c);padding-left:8px}
+
+.arrange{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.arrbtn{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px}
+.arrbtn span{flex:1;font-weight:600}
+.arrbtn small{color:var(--muted)}
+.foot{display:flex;gap:10px;flex-wrap:wrap}
+.foot .btn{flex:1;min-width:140px}
+
+/* section screen */
+.sechead{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);background:color-mix(in srgb,var(--c) 14%,var(--surface));border:1px solid var(--c)}
+.sechead .nm{flex:1;font-family:var(--display);font-weight:700;font-size:30px;text-transform:uppercase;line-height:1}
+.sechead .meta{color:var(--muted);font-size:14px;text-align:right}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .btn{flex:1;min-width:120px;padding:10px 12px;font-size:15px}
+
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.task{display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.task.dragging{border-color:var(--accent);box-shadow:0 8px 24px #0009;background:var(--raised);position:relative;z-index:2}
+.handle{flex:none;width:44px;display:grid;place-items:center;color:var(--muted);touch-action:none;cursor:grab;border:0;background:none;border-right:1px solid var(--line)}
+.handle svg{width:18px;height:18px}
+.num{flex:none;width:26px;padding-top:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700;font-size:14px}
+.body{flex:1;min-width:0;padding:10px 10px 10px 8px;display:flex;flex-direction:column;gap:6px}
+.txt{border:0;background:none;text-align:left;padding:0;font-size:17px;line-height:1.3;overflow-wrap:anywhere}
+.timepill{align-self:flex-start;border:1px dashed var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timepill.set{border-style:solid;border-color:var(--c);color:var(--fg);font-weight:700}
+.updown{flex:none;display:flex;flex-direction:column;border-left:1px solid var(--line)}
+.updown button{flex:1;width:44px;border:0;background:none;color:var(--muted);font-size:16px}
+.updown button+button{border-top:1px solid var(--line)}
+.updown button:disabled{opacity:.25}
+.stamp{flex:none;width:88px;border:0;border-left:1px solid var(--line);background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);
+  font-family:var(--display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em}
+.stamp.flash{background:var(--accent);color:var(--on-accent)}
+.empty{color:var(--muted);text-align:center;padding:24px 8px;border:1px dashed var(--line);border-radius:10px}
+.inlineadd{display:flex;gap:8px}
+.inlineadd .input{flex:1;min-width:0}
+
+/* print screen */
+.ctrl{display:flex;align-items:center;gap:12px}
+.ctrl input[type=range]{flex:1;accent-color:var(--accent)}
+.ctrl output{min-width:60px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:var(--bg);font-weight:600;font-size:15px}
+.chip[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--bg))}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.pagecount{color:var(--muted);font-size:14px}
+#preview{display:flex;flex-direction:column;gap:14px}
+.sheet{position:relative;width:100%;aspect-ratio:297/210;max-width:100%;overflow:hidden;border-radius:4px;box-shadow:0 2px 12px #0008;background:#fff}
+.page{position:absolute;top:0;left:0;width:1123px;height:794px;transform-origin:0 0;transform:scale(var(--s,.3));
+  background:#fff;color:#111;font-family:var(--body);box-sizing:border-box;padding:40px 48px 36px;display:flex;flex-direction:column}
+.page .ph{display:flex;align-items:baseline;gap:18px;border-bottom:4px solid #111;padding-bottom:8px;margin-bottom:10px}
+.page .ph .show{font-family:var(--display);font-weight:700;font-size:34px;text-transform:uppercase;flex:1}
+.page .ph .for{font-size:20px;font-weight:600}
+.page .pb{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.page .secrow{font-family:var(--display);font-weight:700;text-transform:uppercase;padding:4px 0 2px;display:flex;align-items:center;gap:12px}
+.page .secrow i{display:inline-block;width:.7em;height:.7em;border-radius:3px;background:var(--c)}
+.page .prow{display:grid;grid-template-columns:auto 4.6em 1fr;gap:.5em;align-items:baseline;padding:.18em 0;border-bottom:1px solid #ccc}
+.page .prow .n{font-weight:700;color:#555;min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
+.page .prow .t{font-weight:700;font-variant-numeric:tabular-nums}
+.page .pf{display:flex;justify-content:space-between;font-size:14px;color:#555;border-top:1px solid #999;padding-top:6px;margin-top:6px}
+
+/* bottom sheet */
+.scrim{position:fixed;inset:0;background:#000a;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheetpanel{background:var(--surface);border-top:1px solid var(--line);border-radius:16px 16px 0 0;width:100%;max-width:640px;box-sizing:border-box;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:88%;overflow:auto}
+.sheetpanel h3{margin:0;font-family:var(--display);font-size:26px;text-transform:uppercase}
+.sheetpanel p{margin:0;color:var(--muted)}
+.sheetpanel ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btnrow .btn{flex:1;min-width:110px}
+.bigtime{font-family:var(--display);font-size:56px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:calc(100% - 32px);
+  background:var(--fg);color:var(--bg);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 6px 20px #0008;text-align:center}
+
+@media (prefers-reduced-motion:no-preference){.secbtn,.chip,.stamp{transition:background .15s,border-color .15s}}
+
+@media print{
+  @page{size:A4 landscape;margin:0}
+  html,body{background:#fff}
+  .bar,.noprint,.toast,.scrim{display:none!important}
+  main{padding:0;max-width:none}
+  #s-print > :not(#preview){display:none!important}
+  #preview{gap:0}
+  .sheet{aspect-ratio:auto;width:297mm;height:210mm;box-shadow:none;border-radius:0;break-after:page}
+  .page{transform:none;width:297mm;height:210mm}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <button class="back" id="back" hidden>&#8249; Back</button>
+  <h1 id="title">Show Tasks</h1>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="screen" id="s-home">
+    <div class="card">
+      <div class="field">
+        <label for="showName">Show name</label>
+        <input class="input" id="showName" autocomplete="off" placeholder="e.g. The Pirates of Penzance">
+      </div>
+      <div class="field">
+        <label for="forWhom">Tasks are for</label>
+        <input class="input" id="forWhom" autocomplete="off" placeholder="e.g. ASM Stage Left">
+      </div>
+    </div>
+
+    <div>
+      <p class="label">1 · Pick where the task goes</p>
+      <div class="secgrid" id="secgrid"></div>
+    </div>
+
+    <div class="card addpanel" id="addpanel" hidden>
+      <div class="addhead"><span class="dot"></span><span id="addTo">Adding to Act 1</span></div>
+      <div class="field">
+        <label for="taskText">2 · Say or type the task</label>
+        <textarea class="input" id="taskText" enterkeyhint="done" placeholder="Tap the microphone on your keyboard and speak"></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="taskTime">Time (optional)</label>
+          <input class="input" type="time" id="taskTime">
+        </div>
+        <button class="btn primary big" id="addBtn">Add task</button>
+      </div>
+      <p class="label" id="recentLabel" style="margin:4px 0 0">Last added here</p>
+      <ul class="recent" id="recent"></ul>
+    </div>
+
+    <div>
+      <p class="label">3 · Put in order, set times, print</p>
+      <div class="arrange" id="arrange"></div>
+    </div>
+
+    <div class="foot">
+      <button class="btn" id="printAll">Print all sections</button>
+      <button class="btn" id="shareBtn">Give this app to someone</button>
+    </div>
+    <button class="btn danger" id="newShow">Start a new show (clear all tasks)</button>
+  </section>
+
+  <!-- SECTION -->
+  <section class="screen" id="s-section" hidden>
+    <div class="sechead" id="sechead"><span class="nm" id="secName"></span><span class="meta" id="secMeta"></span></div>
+    <div class="tools">
+      <button class="btn" id="timingBtn" aria-pressed="false">Timing run</button>
+      <button class="btn" id="sortBtn">Sort by time</button>
+      <button class="btn primary" id="printSec">Print</button>
+    </div>
+    <p class="hint" id="secHint"></p>
+    <ul class="list" id="list"></ul>
+    <div class="inlineadd">
+      <input class="input" id="inlineText" enterkeyhint="done" placeholder="Add another task…" autocomplete="off">
+      <button class="btn primary" id="inlineAdd">Add</button>
+    </div>
+  </section>
+
+  <!-- PRINT -->
+  <section class="screen" id="s-print" hidden>
+    <div class="card noprint">
+      <div class="field">
+        <label for="fontSize">Print text size</label>
+        <div class="ctrl"><input type="range" id="fontSize" min="16" max="72" step="2"><output id="fontOut"></output></div>
+      </div>
+      <div class="field">
+        <label>Sections to print</label>
+        <div class="chips" id="printChips"></div>
+      </div>
+      <label class="toggle">Start each section on a new page <input type="checkbox" id="newPage"></label>
+      <button class="btn primary big wide" id="doPrint">Print · A4 landscape</button>
+      <p class="pagecount" id="pageCount"></p>
+    </div>
+    <div id="preview"></div>
+  </section>
+</main>
+
+<div id="sheetHost"></div>
+
+<script>
+(() => {
+const SECS = [
+  {id:'pre', name:'Pre-show',  c:'var(--pre)',  print:'#1f6fd1'},
+  {id:'a1',  name:'Act 1',     c:'var(--a1)',   print:'#e07a10'},
+  {id:'a2',  name:'Act 2',     c:'var(--a2)',   print:'#9b3fd1'},
+  {id:'post',name:'After show',c:'var(--post)', print:'#16956a'},
+];
+const KEY = 'showtasks.v1';
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const secOf = id => SECS.find(s => s.id === id);
+
+function sample(){
+  const t = (text, time='') => ({id:uid(), text, time});
+  return {
+    show:'Example Show', forWhom:'ASM Stage Left', fontSize:36, newPage:true, printSecs:['pre','a1','a2','post'],
+    tasks:{
+      pre:[t('Sweep and mop stage','18:30'), t('Check all props on SL table','18:45'), t('Preset chair DS centre'), t('Radio check with SM','19:15')],
+      a1:[t('Fly in drop for Scene 2','19:42'), t('Hand umbrella to Lead','19:51'), t('Strike tea trolley in blackout'), t('Standby smoke machine'), t('Set bench for Scene 4','20:18')],
+      a2:[t('Reset hall table during interval'), t('Letter on tray for Act 2 open','20:52')],
+      post:[t('Collect all hand props'), t('Lock prop cabinet'), t('Ghost light on')],
+    }
+  };
+}
+let st;
+try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!st || !st.tasks) st = sample();
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
+
+let addSec = null, curSec = null, timing = false, screen = 'home';
+
+function fmt(t){
+  if (!t) return '';
+  let [h, m] = t.split(':').map(Number);
+  const ap = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2,'0')} ${ap}`;
+}
+const nowHM = () => { const d = new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+const plural = n => `${n} task${n === 1 ? '' : 's'}`;
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+let toastT;
+function toast(msg, ms=2200){
+  let el = $('.toast');
+  if (!el){ el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role','status'); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, ms);
+}
+
+/* ---------- navigation ---------- */
+function go(name, sec){
+  screen = name;
+  ['home','section','print'].forEach(s => $('#s-' + s).hidden = s !== name);
+  $('#back').hidden = name === 'home';
+  if (name === 'home'){ $('#title').textContent = st.show || 'Show Tasks'; renderHome(); }
+  if (name === 'section'){ curSec = sec; timing = false; $('#title').textContent = st.show || 'Show Tasks'; renderSection(); }
+  if (name === 'print'){
+    if (sec) st.printSecs = [sec];
+    $('#title').textContent = 'Print';
+    renderPrint();
+  }
+  window.scrollTo(0, 0);
+}
+$('#back').onclick = () => go(screen === 'print' && curSec ? 'section' : 'home', curSec);
+
+/* ---------- home ---------- */
+$('#showName').value = st.show; $('#forWhom').value = st.forWhom;
+$('#showName').oninput = e => { st.show = e.target.value; $('#title').textContent = st.show || 'Show Tasks'; save(); };
+$('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
+
+function renderHome(){
+  curSec = null;
+  $('#secgrid').innerHTML = SECS.map(s => `
+    <button class="secbtn" style="--c:${s.c}" data-sec="${s.id}" aria-pressed="${addSec === s.id}">
+      <span class="nm">${s.name}</span><span class="ct">${plural(st.tasks[s.id].length)}</span>
+    </button>`).join('');
+  $('#arrange').innerHTML = SECS.map(s => `
+    <button class="arrbtn" data-open="${s.id}"><i class="dot" style="--c:${s.c}"></i><span>${s.name}</span><small>${st.tasks[s.id].length} &#8250;</small></button>`).join('');
+  renderAdd();
+}
+$('#secgrid').onclick = e => {
+  const b = e.target.closest('[data-sec]'); if (!b) return;
+  addSec = b.dataset.sec; renderHome();
+  $('#taskText').focus();
+};
+$('#arrange').onclick = e => { const b = e.target.closest('[data-open]'); if (b) go('section', b.dataset.open); };
+
+function renderAdd(){
+  const p = $('#addpanel');
+  if (!addSec){ p.hidden = true; return; }
+  const s = secOf(addSec);
+  p.hidden = false; p.style.setProperty('--c', s.c);
+  $('#addTo').textContent = 'Adding to ' + s.name;
+  const last = st.tasks[addSec].slice(-3).reverse();
+  $('#recentLabel').hidden = !last.length;
+  $('#recent').innerHTML = last.map(t => `<li style="--c:${s.c}">${esc(t.text)}${t.time ? ' · ' + fmt(t.time) : ''}</li>`).join('');
+}
+function addTask(sec, text, time=''){
+  text = text.trim(); if (!text) return false;
+  st.tasks[sec].push({id:uid(), text, time}); save(); return true;
+}
+$('#addBtn').onclick = () => {
+  if (!addTask(addSec, $('#taskText').value, $('#taskTime').value)){ toast('Say or type a task first'); return; }
+  $('#taskText').value = ''; $('#taskTime').value = '';
+  toast('Added to ' + secOf(addSec).name); renderHome(); $('#taskText').focus();
+};
+$('#taskText').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#addBtn').click(); } };
+$('#printAll').onclick = () => { st.printSecs = SECS.map(s => s.id); go('print'); };
+
+/* ---------- section ---------- */
+function renderSection(){
+  const s = secOf(curSec), list = st.tasks[curSec];
+  const sec = $('#s-section'); sec.style.setProperty('--c', s.c);
+  $('#secName').textContent = s.name;
+  $('#secMeta').innerHTML = `${plural(list.length)}<br>${esc(st.forWhom || '')}`;
+  $('#timingBtn').setAttribute('aria-pressed', timing);
+  $('#secHint').textContent = timing
+    ? 'Timing run: tap STAMP when each job happens. It records the time on the clock right now.'
+    : 'Drag the grip on the left, or use the arrows, to put tasks in order. Tap a task to edit it, or the time to set one.';
+  if (!list.length){ $('#list').innerHTML = `<li class="empty">No tasks in ${s.name} yet. Add one below.</li>`; return; }
+  $('#list').innerHTML = list.map((t, i) => `
+    <li class="task" data-id="${t.id}">
+      ${timing ? '' : `<button class="handle" aria-label="Drag to reorder"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="7" cy="5" r="1.6"/><circle cx="13" cy="5" r="1.6"/><circle cx="7" cy="10" r="1.6"/><circle cx="13" cy="10" r="1.6"/><circle cx="7" cy="15" r="1.6"/><circle cx="13" cy="15" r="1.6"/></svg></button>`}
+      <span class="num">${i + 1}</span>
+      <div class="body">
+        <button class="txt" data-edit>${esc(t.text)}</button>
+        <button class="timepill ${t.time ? 'set' : ''}" data-time>${t.time ? fmt(t.time) : '+ add time'}</button>
+      </div>
+      ${timing
+        ? `<button class="stamp" data-stamp>Stamp</button>`
+        : `<div class="updown"><button data-up aria-label="Move up" ${i === 0 ? 'disabled' : ''}>&#9650;</button><button data-down aria-label="Move down" ${i === list.length - 1 ? 'disabled' : ''}>&#9660;</button></div>`}
+    </li>`).join('');
+}
+const findTask = id => st.tasks[curSec].findIndex(t => t.id === id);
+
+$('#list').onclick = e => {
+  const row = e.target.closest('.task'); if (!row) return;
+  const list = st.tasks[curSec], i = findTask(row.dataset.id);
+  if (e.target.closest('[data-up]') && i > 0){ [list[i-1], list[i]] = [list[i], list[i-1]]; save(); renderSection(); }
+  else if (e.target.closest('[data-down]') && i < list.length - 1){ [list[i+1], list[i]] = [list[i], list[i+1]]; save(); renderSection(); }
+  else if (e.target.closest('[data-stamp]')){
+    list[i].time = nowHM(); save();
+    const b = e.target.closest('[data-stamp]'); b.classList.add('flash');
+    toast(`Stamped ${fmt(list[i].time)}`);
+    setTimeout(renderSection, 350);
+  }
+  else if (e.target.closest('[data-time]')) timeSheet(list[i]);
+  else if (e.target.closest('[data-edit]')) editSheet(list[i]);
+};
+
+/* drag to reorder (touch + mouse) */
+$('#list').addEventListener('pointerdown', e => {
+  const h = e.target.closest('.handle'); if (!h) return;
+  e.preventDefault();
+  const ul = $('#list'), row = h.closest('.task');
+  row.classList.add('dragging');
+  const move = ev => {
+    const y = ev.clientY;
+    if (y < 90) window.scrollBy(0, -12); else if (y > innerHeight - 90) window.scrollBy(0, 12);
+    let before = null;
+    for (const r of ul.children){
+      if (r === row) continue;
+      const b = r.getBoundingClientRect();
+      if (y < b.top + b.height / 2){ before = r; break; }
+    }
+    if (before !== row.nextElementSibling && before !== row) ul.insertBefore(row, before);
+  };
+  const up = () => {
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+    document.removeEventListener('pointercancel', up);
+    row.classList.remove('dragging');
+    const order = [...ul.children].map(r => r.dataset.id);
+    st.tasks[curSec].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+    save(); renderSection();
+  };
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up);
+  document.addEventListener('pointercancel', up);
+});
+
+$('#timingBtn').onclick = () => { timing = !timing; renderSection(); };
+$('#sortBtn').onclick = () => {
+  const list = st.tasks[curSec];
+  const timed = list.filter(t => t.time).sort((a, b) => a.time.localeCompare(b.time));
+  let k = 0;
+  st.tasks[curSec] = list.map(t => t.time ? timed[k++] : t);
+  save(); renderSection(); toast('Timed tasks put in time order');
+};
+$('#printSec').onclick = () => go('print', curSec);
+$('#inlineAdd').onclick = () => {
+  if (addTask(curSec, $('#inlineText').value)){ $('#inlineText').value = ''; renderSection(); }
+};
+$('#inlineText').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); $('#inlineAdd').click(); } };
+
+/* ---------- bottom sheets ---------- */
+function openSheet(html, wire){
+  const host = $('#sheetHost');
+  host.innerHTML = `<div class="scrim"><div class="sheetpanel" role="dialog" aria-modal="true">${html}</div></div>`;
+  const scrim = host.firstElementChild;
+  const close = () => host.innerHTML = '';
+  scrim.onclick = e => { if (e.target === scrim) close(); };
+  wire(scrim, close);
+}
+function timeSheet(t){
+  openSheet(`
+    <h3>Time for this task</h3>
+    <p>${esc(t.text)}</p>
+    <div class="bigtime" id="tsShow">${t.time ? fmt(t.time) : '--:--'}</div>
+    <button class="btn primary big wide" id="tsNow">Stamp now · ${fmt(nowHM())}</button>
+    <div class="field"><label for="tsIn">Or type a time</label><input class="input" type="time" id="tsIn" value="${t.time}"></div>
+    <div class="btnrow"><button class="btn" id="tsClear">Clear time</button><button class="btn primary" id="tsDone">Done</button></div>`,
+  (el, close) => {
+    const done = v => { t.time = v; save(); close(); renderSection(); };
+    el.querySelector('#tsNow').onclick = () => done(nowHM());
+    el.querySelector('#tsClear').onclick = () => done('');
+    el.querySelector('#tsDone').onclick = () => done(el.querySelector('#tsIn').value);
+  });
+}
+function editSheet(t){
+  openSheet(`
+    <h3>Edit task</h3>
+    <textarea class="input" id="esText">${esc(t.text)}</textarea>
+    <div class="field"><label>Section</label>
+      <div class="chips" id="esSecs">${SECS.map(s => `<button class="chip" style="--c:${s.c}" data-s="${s.id}" aria-pressed="${s.id === curSec}"><i class="dot"></i>${s.name}</button>`).join('')}</div>
+    </div>
+    <div class="btnrow"><button class="btn danger" id="esDel">Delete</button><button class="btn primary" id="esSave">Save</button></div>`,
+  (el, close) => {
+    let target = curSec, armed = false;
+    el.querySelector('#esSecs').onclick = e => {
+      const b = e.target.closest('[data-s]'); if (!b) return;
+      target = b.dataset.s;
+      el.querySelectorAll('#esSecs .chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+    };
+    el.querySelector('#esDel').onclick = e => {
+      if (!armed){ armed = true; e.target.textContent = 'Tap again to delete'; e.target.classList.add('armed'); return; }
+      st.tasks[curSec].splice(findTask(t.id), 1); save(); close(); renderSection();
+    };
+    el.querySelector('#esSave').onclick = () => {
+      t.text = el.querySelector('#esText').value.trim() || t.text;
+      if (target !== curSec){
+        st.tasks[curSec].splice(findTask(t.id), 1); st.tasks[target].push(t);
+        toast('Moved to ' + secOf(target).name);
+      }
+      save(); close(); renderSection();
+    };
+  });
+}
+$('#shareBtn').onclick = () => openSheet(`
+  <h3>Give this app to someone</h3>
+  <p>They only need the web address. Nothing to buy, no account.</p>
+  <ol>
+    <li>Send them the link by text or email.</li>
+    <li>They open it in Safari on their iPhone.</li>
+    <li>They tap the Share button, then <b>Add to Home Screen</b>.</li>
+  </ol>
+  <p>Each person's tasks stay on their own phone. Your list is not shared with them, and theirs is not shared with you.</p>
+  <div class="input" style="font-size:15px;overflow-wrap:anywhere" id="appLink">https://fanman20.github.io/show-tasks/</div>
+  <button class="btn primary big wide" id="copyLink">Copy link</button>`,
+  (el, close) => {
+    el.querySelector('#copyLink').onclick = () => {
+      navigator.clipboard.writeText(el.querySelector('#appLink').textContent)
+        .then(() => { toast('Link copied'); close(); })
+        .catch(() => { const r = document.createRange(); r.selectNodeContents(el.querySelector('#appLink')); getSelection().removeAllRanges(); getSelection().addRange(r); toast('Link selected. Tap Copy.'); });
+    };
+  });
+
+let newArmed = false;
+$('#newShow').onclick = e => {
+  if (!newArmed){ newArmed = true; e.target.textContent = 'Tap again to clear every task'; e.target.classList.add('armed'); setTimeout(() => { newArmed = false; e.target.textContent = 'Start a new show (clear all tasks)'; e.target.classList.remove('armed'); }, 4000); return; }
+  newArmed = false; e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
+  SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = null;
+  $('#showName').value = ''; $('#forWhom').value = '';
+  save(); go('home'); toast('Cleared. Enter the new show name.');
+};
+
+/* ---------- print ---------- */
+$('#fontSize').oninput = e => { st.fontSize = +e.target.value; save(); buildPages(); };
+$('#newPage').onchange = e => { st.newPage = e.target.checked; save(); buildPages(); };
+$('#printChips').onclick = e => {
+  const b = e.target.closest('[data-p]'); if (!b) return;
+  const id = b.dataset.p, on = st.printSecs.includes(id);
+  st.printSecs = on ? st.printSecs.filter(x => x !== id) : SECS.map(s => s.id).filter(x => x === id || st.printSecs.includes(x));
+  save(); renderPrint();
+};
+function renderPrint(){
+  $('#fontSize').value = st.fontSize; $('#newPage').checked = st.newPage;
+  $('#printChips').innerHTML = SECS.map(s => `<button class="chip" style="--c:${s.c}" data-p="${s.id}" aria-pressed="${st.printSecs.includes(s.id)}"><i class="dot"></i>${s.name}</button>`).join('');
+  buildPages();
+}
+function buildPages(){
+  $('#fontOut').textContent = st.fontSize + ' pt';
+  const pv = $('#preview'); pv.innerHTML = '';
+  const px = st.fontSize * 96 / 72;
+  const pages = [];
+  let body = null;
+  const newPage = () => {
+    const sheet = document.createElement('div'); sheet.className = 'sheet';
+    sheet.innerHTML = `<div class="page"><div class="ph"><span class="show">${esc(st.show || 'Show')}</span><span class="for">${esc(st.forWhom || '')}</span></div><div class="pb"></div><div class="pf"><span>${new Date().toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}</span><span class="pn"></span></div></div>`;
+    pv.appendChild(sheet); pages.push(sheet);
+    body = sheet.querySelector('.pb'); body.style.fontSize = px + 'px';
+  };
+  const fits = el => { body.appendChild(el); if (body.scrollHeight <= body.clientHeight + 1 || body.children.length === 1) return true; el.remove(); return false; };
+  const head = (s, cont) => { const h = document.createElement('div'); h.className = 'secrow'; h.style.setProperty('--c', s.print); h.style.fontSize = Math.max(px * 1.15, 26) + 'px'; h.innerHTML = `<i></i>${s.name}${cont ? ' (continued)' : ''}`; return h; };
+
+  for (const s of SECS){
+    if (!st.printSecs.includes(s.id)) continue;
+    const list = st.tasks[s.id];
+    if (!list.length) continue;
+    if (!body || st.newPage) newPage();
+    if (!fits(head(s))){ newPage(); fits(head(s)); }
+    list.forEach((t, i) => {
+      const r = document.createElement('div'); r.className = 'prow';
+      r.innerHTML = `<span class="n">${i + 1}</span><span class="t">${t.time ? fmt(t.time).replace(' ', '&#8239;') : ''}</span><span>${esc(t.text)}</span>`;
+      if (!fits(r)){ newPage(); fits(head(s, true)); fits(r); }
+    });
+  }
+  if (!pages.length){ pv.innerHTML = '<p class="empty">Nothing to print. Pick a section with tasks in it.</p>'; $('#pageCount').textContent = ''; return; }
+  pages.forEach((p, i) => p.querySelector('.pn').textContent = `Page ${i + 1} of ${pages.length}`);
+  $('#pageCount').textContent = `${pages.length} A4 landscape page${pages.length === 1 ? '' : 's'} at ${st.fontSize} pt`;
+  scalePages();
+}
+function scalePages(){
+  document.querySelectorAll('.sheet').forEach(s => s.querySelector('.page').style.setProperty('--s', s.clientWidth / 1123));
+}
+addEventListener('resize', scalePages);
+$('#doPrint').onclick = () => {
+  try { window.print(); } catch(e) { toast('Printing is not available here'); }
+};
+
+go('home');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+
+</body>
+</html>
