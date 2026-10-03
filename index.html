@@ -42,36 +42,46 @@ button{cursor:pointer}
 .bar h1{flex:1;min-width:0;margin:0;font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.02em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
 .bar .back{border:0;background:none;color:var(--accent);font-weight:600;padding:6px 4px;font-size:17px}
-.mock{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--on-accent);background:var(--accent);border-radius:4px;padding:2px 6px}
 
 main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 .screen{display:flex;flex-direction:column;gap:22px}
 .label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-h2.label{margin:0}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
 .field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:13px;color:var(--muted);font-weight:600}
-.input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:17px;width:100%;box-sizing:border-box}
+.field label,.field .flabel{font-size:13px;color:var(--muted);font-weight:600}
+.input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:17px;width:100%}
 .input::placeholder{color:#636c80}
 textarea.input{resize:vertical;min-height:84px}
+.minsec{display:flex;align-items:center;gap:6px}
+.minsec .input{width:76px;text-align:center}
+.minsec span{color:var(--muted);font-size:14px}
 
 /* section buttons */
 .secgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.secgrid .full{grid-column:1/-1;min-height:62px}
 .secbtn{position:relative;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
-  padding:14px 14px 12px 20px;display:flex;flex-direction:column;gap:2px;min-height:88px;overflow:hidden}
+  padding:12px 12px 10px 20px;display:flex;flex-direction:column;gap:2px;min-height:84px;overflow:hidden}
 .secbtn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--c)}
-.secbtn .nm{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+.secbtn.before::before{background:repeating-linear-gradient(180deg,var(--c) 0 8px,transparent 8px 13px)}
+.secbtn .nm{font-family:var(--display);font-weight:700;font-size:25px;text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+.secbtn .tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
 .secbtn .ct{color:var(--muted);font-size:14px}
 .secbtn[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,var(--surface))}
 .secbtn[aria-pressed="true"] .ct{color:var(--fg)}
 
+.runcard{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.runbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--c);border-radius:var(--r);
+  background:color-mix(in srgb,var(--c) 12%,var(--surface));padding:12px 14px}
+.runbtn .nm{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;line-height:1.05}
+.runbtn small{color:var(--muted);font-size:14px}
+
 .addpanel{border-color:var(--c)}
 .addhead{display:flex;align-items:center;gap:8px;font-weight:600}
-.dot{width:12px;height:12px;border-radius:3px;background:var(--c);flex:none}
+.dot{width:12px;height:12px;border-radius:3px;background:var(--c);flex:none;display:inline-block}
 .hint{font-size:13px;color:var(--muted);margin:0}
 .row2{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
-.row2 .field{flex:1;min-width:130px}
+.row2 .field{flex:1;min-width:150px}
 
 .btn{border:1px solid var(--line);background:var(--raised);border-radius:10px;padding:11px 16px;font-weight:600;font-size:16px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
@@ -85,6 +95,7 @@ textarea.input{resize:vertical;min-height:84px}
 .recent li{font-size:15px;color:var(--muted);border-left:3px solid var(--c);padding-left:8px}
 
 .arrange{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.arrange .full{grid-column:1/-1}
 .arrbtn{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px}
 .arrbtn span{flex:1;font-weight:600}
 .arrbtn small{color:var(--muted)}
@@ -115,9 +126,48 @@ textarea.input{resize:vertical;min-height:84px}
 .stamp{flex:none;width:88px;border:0;border-left:1px solid var(--line);background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);
   font-family:var(--display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em}
 .stamp.flash{background:var(--accent);color:var(--on-accent)}
-.empty{color:var(--muted);text-align:center;padding:24px 8px;border:1px dashed var(--line);border-radius:10px}
+.empty{color:var(--muted);text-align:center;padding:24px 8px;border:1px dashed var(--line);border-radius:10px;margin:0}
 .inlineadd{display:flex;gap:8px}
 .inlineadd .input{flex:1;min-width:0}
+
+/* running screen */
+.acttabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acttab{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase}
+.acttab[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,var(--surface))}
+.clock{border-color:var(--c);text-align:center;gap:6px;padding:16px 14px}
+.clk-label{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.clk-big{font-family:var(--display);font-weight:700;font-size:clamp(76px,26vw,124px);line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.clk-sub{color:var(--muted);font-size:15px}
+.next{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:2px}
+.next .nl{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.next .nin{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.next .ntx{font-size:19px;font-weight:600;overflow-wrap:anywhere}
+.next.soon .nin{color:var(--on-accent);background:var(--accent);border-radius:8px;align-self:center;padding:2px 12px}
+.clkbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.clkbtns .btn{flex:1;min-width:130px}
+
+.rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rrow{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.rrow .at{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);font-size:15px}
+.rrow .tx{font-size:18px;line-height:1.3;overflow-wrap:anywhere;min-width:0}
+.rrow .st{font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.rrow.next{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.rrow.next .at,.rrow.next .st{color:var(--accent)}
+.rrow.due{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.rrow.due .at,.rrow.due .st{color:var(--on-accent)}
+.rrow.past{opacity:.5}
+.rrow.done{opacity:.4}
+.rrow.done .tx{text-decoration:line-through}
+.rrow.done .st{color:var(--post)}
+.brow{grid-template-columns:30px 1fr}
+.box{width:26px;height:26px;border:2px solid var(--muted);border-radius:6px;display:grid;place-items:center;font-weight:700;color:var(--on-accent)}
+.brow.done .box{background:var(--post);border-color:var(--post)}
+.brow.done{opacity:.55}
+.brow.done .tx{text-decoration:line-through}
+.summary{border:1px dashed var(--line);background:none;border-radius:10px;padding:10px 12px;color:var(--muted);text-align:left;font-weight:600}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
+.toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.rec{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)}
 
 /* print screen */
 .ctrl{display:flex;align-items:center;gap:12px}
@@ -126,13 +176,11 @@ textarea.input{resize:vertical;min-height:84px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:var(--bg);font-weight:600;font-size:15px}
 .chip[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--bg))}
-.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
-.toggle input{width:22px;height:22px;accent-color:var(--accent)}
-.pagecount{color:var(--muted);font-size:14px}
+.pagecount{color:var(--muted);font-size:14px;margin:0}
 #preview{display:flex;flex-direction:column;gap:14px}
 .sheet{position:relative;width:100%;aspect-ratio:297/210;max-width:100%;overflow:hidden;border-radius:4px;box-shadow:0 2px 12px #0008;background:#fff}
 .page{position:absolute;top:0;left:0;width:1123px;height:794px;transform-origin:0 0;transform:scale(var(--s,.3));
-  background:#fff;color:#111;font-family:var(--body);box-sizing:border-box;padding:40px 48px 36px;display:flex;flex-direction:column}
+  background:#fff;color:#111;font-family:var(--body);padding:40px 48px 36px;display:flex;flex-direction:column}
 .page .ph{display:flex;align-items:baseline;gap:18px;border-bottom:4px solid #111;padding-bottom:8px;margin-bottom:10px}
 .page .ph .show{font-family:var(--display);font-weight:700;font-size:34px;text-transform:uppercase;flex:1}
 .page .ph .for{font-size:20px;font-weight:600}
@@ -146,7 +194,7 @@ textarea.input{resize:vertical;min-height:84px}
 
 /* bottom sheet */
 .scrim{position:fixed;inset:0;background:#000a;z-index:20;display:flex;align-items:flex-end;justify-content:center}
-.sheetpanel{background:var(--surface);border-top:1px solid var(--line);border-radius:16px 16px 0 0;width:100%;max-width:640px;box-sizing:border-box;
+.sheetpanel{background:var(--surface);border-top:1px solid var(--line);border-radius:16px 16px 0 0;width:100%;max-width:640px;
   padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:88%;overflow:auto}
 .sheetpanel h3{margin:0;font-family:var(--display);font-size:26px;text-transform:uppercase}
 .sheetpanel p{margin:0;color:var(--muted)}
@@ -158,11 +206,15 @@ textarea.input{resize:vertical;min-height:84px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:calc(100% - 32px);
   background:var(--fg);color:var(--bg);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 6px 20px #0008;text-align:center}
 
-@media (prefers-reduced-motion:no-preference){.secbtn,.chip,.stamp{transition:background .15s,border-color .15s}}
+@media (prefers-reduced-motion:no-preference){
+  .secbtn,.chip,.stamp,.rrow{transition:background .15s,border-color .15s,opacity .2s}
+  .rrow.due,.next.soon .nin{animation:pulse 1s ease-in-out infinite alternate}
+  @keyframes pulse{to{filter:brightness(1.25)}}
+}
 
 @media print{
   @page{size:A4 landscape;margin:0}
-  html,body{background:#fff}
+  html,body{background:#fff;padding:0}
   .bar,.noprint,.toast,.scrim{display:none!important}
   main{padding:0;max-width:none}
   #s-print > :not(#preview){display:none!important}
@@ -194,20 +246,32 @@ textarea.input{resize:vertical;min-height:84px}
     </div>
 
     <div>
+      <p class="label">During the show</p>
+      <div class="runcard" id="runcard"></div>
+    </div>
+
+    <div>
       <p class="label">1 · Pick where the task goes</p>
       <div class="secgrid" id="secgrid"></div>
     </div>
 
     <div class="card addpanel" id="addpanel" hidden>
-      <div class="addhead"><span class="dot"></span><span id="addTo">Adding to Act 1</span></div>
+      <div class="addhead"><span class="dot"></span><span id="addTo"></span></div>
       <div class="field">
         <label for="taskText">2 · Say or type the task</label>
         <textarea class="input" id="taskText" enterkeyhint="done" placeholder="Tap the microphone on your keyboard and speak"></textarea>
       </div>
       <div class="row2">
-        <div class="field">
+        <div class="field" id="clockField">
           <label for="taskTime">Time (optional)</label>
           <input class="input" type="time" id="taskTime">
+        </div>
+        <div class="field" id="atField">
+          <span class="flabel">Time into the act (optional)</span>
+          <div class="minsec">
+            <input class="input" type="number" inputmode="numeric" min="0" id="atMin" placeholder="0" aria-label="Minutes"><span>min</span>
+            <input class="input" type="number" inputmode="numeric" min="0" max="59" id="atSec" placeholder="00" aria-label="Seconds"><span>sec</span>
+          </div>
         </div>
         <button class="btn primary big" id="addBtn">Add task</button>
       </div>
@@ -243,6 +307,35 @@ textarea.input{resize:vertical;min-height:84px}
     </div>
   </section>
 
+  <!-- RUNNING -->
+  <section class="screen" id="s-run" hidden>
+    <div class="acttabs" id="acttabs">
+      <button class="acttab" data-act="a1" style="--c:var(--a1)">Act 1</button>
+      <button class="acttab" data-act="a2" style="--c:var(--a2)">Act 2</button>
+    </div>
+    <div class="card clock">
+      <div class="clk-label" id="clkLabel"></div>
+      <div class="clk-big" id="clkBig">0:00</div>
+      <div class="clk-sub" id="clkSub"></div>
+      <div class="next" id="next">
+        <span class="nl" id="nextLabel">Next</span>
+        <span class="nin" id="nextIn"></span>
+        <span class="ntx" id="nextTx"></span>
+      </div>
+      <div class="clkbtns" id="clkBtns"></div>
+    </div>
+    <div id="beforeWrap">
+      <p class="label" id="beforeLabel"></p>
+      <ul class="rlist" id="beforeList"></ul>
+    </div>
+    <button class="summary" id="beforeSummary" hidden></button>
+    <div>
+      <p class="label" id="runLabel"></p>
+      <ul class="rlist" id="runList"></ul>
+    </div>
+    <label class="toggle rec">Rehearsal: tap a task to record its time <input type="checkbox" id="recMode"></label>
+  </section>
+
   <!-- PRINT -->
   <section class="screen" id="s-print" hidden>
     <div class="card noprint">
@@ -251,7 +344,7 @@ textarea.input{resize:vertical;min-height:84px}
         <div class="ctrl"><input type="range" id="fontSize" min="16" max="72" step="2"><output id="fontOut"></output></div>
       </div>
       <div class="field">
-        <label>Sections to print</label>
+        <span class="flabel">Sections to print</span>
         <div class="chips" id="printChips"></div>
       </div>
       <label class="toggle">Start each section on a new page <input type="checkbox" id="newPage"></label>
@@ -266,44 +359,81 @@ textarea.input{resize:vertical;min-height:84px}
 
 <script>
 (() => {
+// kind 'clock' = optional clock time (7:42 pm); kind 'run' = time into the act (12:30)
 const SECS = [
-  {id:'pre', name:'Pre-show',  c:'var(--pre)',  print:'#1f6fd1'},
-  {id:'a1',  name:'Act 1',     c:'var(--a1)',   print:'#e07a10'},
-  {id:'a2',  name:'Act 2',     c:'var(--a2)',   print:'#9b3fd1'},
-  {id:'post',name:'After show',c:'var(--post)', print:'#16956a'},
+  {id:'pre',  name:'Pre-show',      nm:'Pre-show',   c:'var(--pre)',  print:'#1f6fd1', kind:'clock', full:true},
+  {id:'b1',   name:'Before Act 1',  nm:'Act 1', tag:'Before',  c:'var(--a1)', print:'#e07a10', kind:'clock', act:'a1'},
+  {id:'a1',   name:'Act 1 running', nm:'Act 1', tag:'Running', c:'var(--a1)', print:'#e07a10', kind:'run',   act:'a1'},
+  {id:'b2',   name:'Before Act 2',  nm:'Act 2', tag:'Before',  c:'var(--a2)', print:'#9b3fd1', kind:'clock', act:'a2'},
+  {id:'a2',   name:'Act 2 running', nm:'Act 2', tag:'Running', c:'var(--a2)', print:'#9b3fd1', kind:'run',   act:'a2'},
+  {id:'post', name:'After show',    nm:'After show', c:'var(--post)', print:'#16956a', kind:'clock', full:true},
 ];
+const ACTS = {a1:{name:'Act 1', before:'b1', run:'a1', c:'var(--a1)'}, a2:{name:'Act 2', before:'b2', run:'a2', c:'var(--a2)'}};
 const KEY = 'showtasks.v1';
 const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const secOf = id => SECS.find(s => s.id === id);
+const isRun = id => secOf(id).kind === 'run';
+const pad = n => String(n).padStart(2, '0');
 
 function sample(){
-  const t = (text, time='') => ({id:uid(), text, time});
+  const t = (text, time='') => ({id:uid(), text, time, at:null});
+  const r = (text, at) => ({id:uid(), text, time:'', at});
   return {
-    show:'Example Show', forWhom:'ASM Stage Left', fontSize:36, newPage:true, printSecs:['pre','a1','a2','post'],
+    v:2, show:'Example Show', forWhom:'ASM Stage Left', fontSize:36, newPage:true, printSecs:SECS.map(s => s.id),
+    run:{a1:{start:'19:30', startedAt:null, done:{}, autoDay:null}, a2:{start:'', startedAt:null, done:{}, autoDay:null}},
     tasks:{
-      pre:[t('Sweep and mop stage','18:30'), t('Check all props on SL table','18:45'), t('Preset chair DS centre'), t('Radio check with SM','19:15')],
-      a1:[t('Fly in drop for Scene 2','19:42'), t('Hand umbrella to Lead','19:51'), t('Strike tea trolley in blackout'), t('Standby smoke machine'), t('Set bench for Scene 4','20:18')],
-      a2:[t('Reset hall table during interval'), t('Letter on tray for Act 2 open','20:52')],
+      pre:[t('Sweep and mop stage','18:30'), t('Check all props on SL table','18:45'), t('Radio check with SM','19:15')],
+      b1:[t('Preset chair DS centre'), t('Set tea trolley SL'), t('Check sightlines are clear'), t('Standing by, tell SM')],
+      a1:[r('Hand umbrella to Lead', 270), r('Fly in drop for Scene 2', 660), r('Strike tea trolley in blackout', 1095), r('Standby smoke machine', 1560), r('Set bench for Scene 4', 2490)],
+      b2:[t('Reset hall table'), t('Letter on tray'), t('Clear Act 1 props off SL table')],
+      a2:[r('Hand letter to Maid', 180), r('Thunder sheet cue', 900), r('Flowers ready for bows', 2280)],
       post:[t('Collect all hand props'), t('Lock prop cabinet'), t('Ghost light on')],
     }
   };
 }
+function migrate(s){
+  if (!s || !s.tasks) return sample();
+  if (s.v === 2) return s;
+  if (s.show === 'Example Show') return sample();
+  // version 1 had four sections with clock times; act times become time into the act
+  const base = {a1:'19:30', a2:'20:45'};
+  for (const a of ['a1','a2']) (s.tasks[a] || []).forEach(t => {
+    if (t.time){ const [h,m] = t.time.split(':').map(Number), [bh,bm] = base[a].split(':').map(Number);
+      t.at = Math.max(0, (h*60 + m) - (bh*60 + bm)) * 60; } else t.at = null;
+    t.time = '';
+  });
+  s.tasks.b1 = s.tasks.b1 || []; s.tasks.b2 = s.tasks.b2 || [];
+  s.printSecs = SECS.map(x => x.id);
+  s.run = {a1:{start:'19:30', startedAt:null, done:{}, autoDay:null}, a2:{start:'', startedAt:null, done:{}, autoDay:null}};
+  s.v = 2;
+  return s;
+}
 let st;
 try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
-if (!st || !st.tasks) st = sample();
+st = migrate(st);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
+save();
 
-let addSec = null, curSec = null, timing = false, screen = 'home';
+let addSec = null, curSec = null, timing = false, screen = 'home', runAct = 'a1';
 
 function fmt(t){
   if (!t) return '';
   let [h, m] = t.split(':').map(Number);
   const ap = h >= 12 ? 'pm' : 'am';
   h = h % 12 || 12;
-  return `${h}:${String(m).padStart(2,'0')} ${ap}`;
+  return `${h}:${pad(m)} ${ap}`;
 }
-const nowHM = () => { const d = new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+function fmtAt(s){
+  s = Math.max(0, Math.floor(s));
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`;
+}
+const timeLabel = (t, sec) => isRun(sec) ? (t.at != null ? fmtAt(t.at) + ' in' : '') : fmt(t.time);
+const nowHM = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const clockOf = ms => { const d = new Date(ms); return fmt(`${pad(d.getHours())}:${pad(d.getMinutes())}`); };
+const todayAt = hm => { const [h, m] = hm.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime(); };
+const todayKey = () => new Date().toDateString();
 const plural = n => `${n} task${n === 1 ? '' : 's'}`;
 function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -314,38 +444,80 @@ function toast(msg, ms=2200){
   el.textContent = msg; el.hidden = false;
   clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, ms);
 }
+// two-tap confirm for anything destructive
+function arm(btn, armedText, fn){
+  if (btn.dataset.armed){ delete btn.dataset.armed; fn(); return; }
+  const orig = btn.textContent;
+  btn.dataset.armed = '1'; btn.textContent = armedText; btn.classList.add('armed');
+  setTimeout(() => { if (btn.dataset.armed){ delete btn.dataset.armed; btn.textContent = orig; btn.classList.remove('armed'); } }, 4000);
+}
+
+/* ---------- act timers ---------- */
+const elapsed = act => (Date.now() - st.run[act].startedAt) / 1000;
+function resetAct(act){
+  const r = st.run[act];
+  r.startedAt = null; r.done = {}; r.autoDay = todayKey(); save();
+}
+function checkAuto(act){
+  const r = st.run[act], now = Date.now();
+  if (r.startedAt && now - r.startedAt > 6 * 3600e3){ r.startedAt = null; r.done = {}; save(); return true; }  // last night's show
+  if (!r.startedAt && r.start && r.autoDay !== todayKey()){
+    const sched = todayAt(r.start);
+    if (now >= sched && now - sched < 3 * 3600e3){ r.startedAt = sched; r.autoDay = todayKey(); save(); return true; }
+  }
+  return false;
+}
+
+let wl = null;
+async function wake(on){
+  try {
+    if (on && !wl && navigator.wakeLock){ wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => wl = null); }
+    if (!on && wl){ await wl.release(); wl = null; }
+  } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && screen === 'run') wake(true); });
 
 /* ---------- navigation ---------- */
-function go(name, sec){
+function go(name, arg){
   screen = name;
-  ['home','section','print'].forEach(s => $('#s-' + s).hidden = s !== name);
+  ['home','section','run','print'].forEach(s => $('#s-' + s).hidden = s !== name);
   $('#back').hidden = name === 'home';
+  wake(name === 'run');
   if (name === 'home'){ $('#title').textContent = st.show || 'Show Tasks'; renderHome(); }
-  if (name === 'section'){ curSec = sec; timing = false; $('#title').textContent = st.show || 'Show Tasks'; renderSection(); }
+  if (name === 'section'){ curSec = arg; timing = false; $('#title').textContent = st.show || 'Show Tasks'; renderSection(); }
+  if (name === 'run'){ runAct = arg || runAct; $('#title').textContent = 'Running'; renderRun(); }
   if (name === 'print'){
-    if (sec) st.printSecs = [sec];
+    if (arg) st.printSecs = [arg];
     $('#title').textContent = 'Print';
     renderPrint();
   }
   window.scrollTo(0, 0);
 }
-$('#back').onclick = () => go(screen === 'print' && curSec ? 'section' : 'home', curSec);
+$('#back').onclick = () => (screen === 'print' || screen === 'run') && curSec ? go('section', curSec) : go('home');
 
 /* ---------- home ---------- */
 $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
 $('#showName').oninput = e => { st.show = e.target.value; $('#title').textContent = st.show || 'Show Tasks'; save(); };
 $('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
 
+function actStatus(act){
+  const r = st.run[act];
+  if (r.startedAt) return `Running · ${fmtAt(elapsed(act))}`;
+  return r.start ? `Starts ${fmt(r.start)}` : 'Start by hand';
+}
 function renderHome(){
   curSec = null;
+  $('#runcard').innerHTML = Object.entries(ACTS).map(([id, a]) => `
+    <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small>${actStatus(id)}</small></button>`).join('');
   $('#secgrid').innerHTML = SECS.map(s => `
-    <button class="secbtn" style="--c:${s.c}" data-sec="${s.id}" aria-pressed="${addSec === s.id}">
-      <span class="nm">${s.name}</span><span class="ct">${plural(st.tasks[s.id].length)}</span>
+    <button class="secbtn ${s.full ? 'full' : ''} ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-sec="${s.id}" aria-pressed="${addSec === s.id}">
+      ${s.tag ? `<span class="tag">${s.tag}</span>` : ''}<span class="nm">${s.nm}</span><span class="ct">${plural(st.tasks[s.id].length)}</span>
     </button>`).join('');
   $('#arrange').innerHTML = SECS.map(s => `
-    <button class="arrbtn" data-open="${s.id}"><i class="dot" style="--c:${s.c}"></i><span>${s.name}</span><small>${st.tasks[s.id].length} &#8250;</small></button>`).join('');
+    <button class="arrbtn ${s.full ? 'full' : ''}" data-open="${s.id}"><i class="dot" style="--c:${s.c}"></i><span>${s.name}</span><small>${st.tasks[s.id].length} &#8250;</small></button>`).join('');
   renderAdd();
 }
+$('#runcard').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
 $('#secgrid').onclick = e => {
   const b = e.target.closest('[data-sec]'); if (!b) return;
   addSec = b.dataset.sec; renderHome();
@@ -359,17 +531,25 @@ function renderAdd(){
   const s = secOf(addSec);
   p.hidden = false; p.style.setProperty('--c', s.c);
   $('#addTo').textContent = 'Adding to ' + s.name;
+  $('#clockField').hidden = s.kind === 'run';
+  $('#atField').hidden = s.kind !== 'run';
   const last = st.tasks[addSec].slice(-3).reverse();
   $('#recentLabel').hidden = !last.length;
-  $('#recent').innerHTML = last.map(t => `<li style="--c:${s.c}">${esc(t.text)}${t.time ? ' · ' + fmt(t.time) : ''}</li>`).join('');
+  $('#recent').innerHTML = last.map(t => { const tl = timeLabel(t, addSec); return `<li style="--c:${s.c}">${esc(t.text)}${tl ? ' · ' + tl : ''}</li>`; }).join('');
 }
-function addTask(sec, text, time=''){
+function addTask(sec, text, time='', at=null){
   text = text.trim(); if (!text) return false;
-  st.tasks[sec].push({id:uid(), text, time}); save(); return true;
+  st.tasks[sec].push({id:uid(), text, time, at}); save(); return true;
+}
+function readMinSec(mEl, sEl){
+  if (mEl.value === '' && sEl.value === '') return null;
+  return (parseInt(mEl.value) || 0) * 60 + Math.min(59, parseInt(sEl.value) || 0);
 }
 $('#addBtn').onclick = () => {
-  if (!addTask(addSec, $('#taskText').value, $('#taskTime').value)){ toast('Say or type a task first'); return; }
-  $('#taskText').value = ''; $('#taskTime').value = '';
+  const run = isRun(addSec);
+  const ok = addTask(addSec, $('#taskText').value, run ? '' : $('#taskTime').value, run ? readMinSec($('#atMin'), $('#atSec')) : null);
+  if (!ok){ toast('Say or type a task first'); return; }
+  $('#taskText').value = ''; $('#taskTime').value = ''; $('#atMin').value = ''; $('#atSec').value = '';
   toast('Added to ' + secOf(addSec).name); renderHome(); $('#taskText').focus();
 };
 $('#taskText').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#addBtn').click(); } };
@@ -377,29 +557,32 @@ $('#printAll').onclick = () => { st.printSecs = SECS.map(s => s.id); go('print')
 
 /* ---------- section ---------- */
 function renderSection(){
-  const s = secOf(curSec), list = st.tasks[curSec];
-  const sec = $('#s-section'); sec.style.setProperty('--c', s.c);
+  const s = secOf(curSec), list = st.tasks[curSec], run = s.kind === 'run';
+  $('#s-section').style.setProperty('--c', s.c);
   $('#secName').textContent = s.name;
   $('#secMeta').innerHTML = `${plural(list.length)}<br>${esc(st.forWhom || '')}`;
+  $('#timingBtn').textContent = run ? 'Record times' : 'Timing run';
   $('#timingBtn').setAttribute('aria-pressed', timing);
   $('#secHint').textContent = timing
     ? 'Timing run: tap STAMP when each job happens. It records the time on the clock right now.'
-    : 'Drag the grip on the left, or use the arrows, to put tasks in order. Tap a task to edit it, or the time to set one.';
+    : run
+      ? 'Drag the grip, or use the arrows, to put tasks in order. Times here are time into the act. Record times opens the running clock for a rehearsal.'
+      : 'Drag the grip on the left, or use the arrows, to put tasks in order. Tap a task to edit it, or the time to set one.';
   if (!list.length){ $('#list').innerHTML = `<li class="empty">No tasks in ${s.name} yet. Add one below.</li>`; return; }
-  $('#list').innerHTML = list.map((t, i) => `
+  $('#list').innerHTML = list.map((t, i) => { const tl = timeLabel(t, curSec); return `
     <li class="task" data-id="${t.id}">
       ${timing ? '' : `<button class="handle" aria-label="Drag to reorder"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="7" cy="5" r="1.6"/><circle cx="13" cy="5" r="1.6"/><circle cx="7" cy="10" r="1.6"/><circle cx="13" cy="10" r="1.6"/><circle cx="7" cy="15" r="1.6"/><circle cx="13" cy="15" r="1.6"/></svg></button>`}
       <span class="num">${i + 1}</span>
       <div class="body">
         <button class="txt" data-edit>${esc(t.text)}</button>
-        <button class="timepill ${t.time ? 'set' : ''}" data-time>${t.time ? fmt(t.time) : '+ add time'}</button>
+        <button class="timepill ${tl ? 'set' : ''}" data-time>${tl || '+ add time'}</button>
       </div>
       ${timing
         ? `<button class="stamp" data-stamp>Stamp</button>`
         : `<div class="updown"><button data-up aria-label="Move up" ${i === 0 ? 'disabled' : ''}>&#9650;</button><button data-down aria-label="Move down" ${i === list.length - 1 ? 'disabled' : ''}>&#9660;</button></div>`}
-    </li>`).join('');
+    </li>`; }).join('');
 }
-const findTask = id => st.tasks[curSec].findIndex(t => t.id === id);
+const findTask = (id, sec=curSec) => st.tasks[sec].findIndex(t => t.id === id);
 
 $('#list').onclick = e => {
   const row = e.target.closest('.task'); if (!row) return;
@@ -408,7 +591,7 @@ $('#list').onclick = e => {
   else if (e.target.closest('[data-down]') && i < list.length - 1){ [list[i+1], list[i]] = [list[i], list[i+1]]; save(); renderSection(); }
   else if (e.target.closest('[data-stamp]')){
     list[i].time = nowHM(); save();
-    const b = e.target.closest('[data-stamp]'); b.classList.add('flash');
+    e.target.closest('[data-stamp]').classList.add('flash');
     toast(`Stamped ${fmt(list[i].time)}`);
     setTimeout(renderSection, 350);
   }
@@ -447,12 +630,16 @@ $('#list').addEventListener('pointerdown', e => {
   document.addEventListener('pointercancel', up);
 });
 
-$('#timingBtn').onclick = () => { timing = !timing; renderSection(); };
+$('#timingBtn').onclick = () => {
+  if (isRun(curSec)){ $('#recMode').checked = true; go('run', secOf(curSec).act); return; }
+  timing = !timing; renderSection();
+};
 $('#sortBtn').onclick = () => {
-  const list = st.tasks[curSec];
-  const timed = list.filter(t => t.time).sort((a, b) => a.time.localeCompare(b.time));
+  const list = st.tasks[curSec], run = isRun(curSec);
+  const has = t => run ? t.at != null : !!t.time;
+  const timed = list.filter(has).sort((a, b) => run ? a.at - b.at : a.time.localeCompare(b.time));
   let k = 0;
-  st.tasks[curSec] = list.map(t => t.time ? timed[k++] : t);
+  st.tasks[curSec] = list.map(t => has(t) ? timed[k++] : t);
   save(); renderSection(); toast('Timed tasks put in time order');
 };
 $('#printSec').onclick = () => go('print', curSec);
@@ -460,6 +647,127 @@ $('#inlineAdd').onclick = () => {
   if (addTask(curSec, $('#inlineText').value)){ $('#inlineText').value = ''; renderSection(); }
 };
 $('#inlineText').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); $('#inlineAdd').click(); } };
+
+/* ---------- running ---------- */
+let lastNext = null;
+$('#acttabs').onclick = e => { const b = e.target.closest('[data-act]'); if (b){ runAct = b.dataset.act; lastNext = null; renderRun(); } };
+
+function renderRun(){
+  const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt;
+  $('#s-run').style.setProperty('--c', A.c);
+  document.querySelectorAll('.acttab').forEach(b => b.setAttribute('aria-pressed', b.dataset.act === runAct));
+  $('#clkBtns').innerHTML = started
+    ? `<button class="btn" id="cRestart">Restart from now</button><button class="btn danger" id="cReset">Stop and reset</button>`
+    : `<button class="btn primary big" id="cStart">Start now</button><button class="btn" id="cSet">${r.start ? 'Change start time' : 'Set start time'}</button>`;
+
+  const before = st.tasks[A.before], runs = st.tasks[A.run];
+  const nDone = before.filter(t => r.done[t.id]).length;
+  $('#beforeLabel').textContent = `Before ${A.name}`;
+  $('#beforeWrap').hidden = started || !before.length;
+  $('#beforeSummary').hidden = !started || !before.length;
+  $('#beforeSummary').textContent = `Before ${A.name}: ${nDone} of ${before.length} done`;
+  $('#beforeList').innerHTML = before.map(t => `
+    <li class="rrow brow ${r.done[t.id] ? 'done' : ''}" data-id="${t.id}"><span class="box">${r.done[t.id] ? '&#10003;' : ''}</span><span class="tx">${esc(t.text)}</span></li>`).join('');
+  $('#runLabel').textContent = `${A.name} running`;
+  $('#runList').innerHTML = runs.length ? runs.map(t => `
+    <li class="rrow" data-id="${t.id}"><span class="at">${t.at != null ? fmtAt(t.at) : '–'}</span><span class="tx">${esc(t.text)}</span><span class="st"></span></li>`).join('')
+    : `<li class="empty">No running tasks for ${A.name} yet.</li>`;
+  tickRun();
+}
+function tickRun(){
+  const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt, now = Date.now();
+  const el = started ? elapsed(runAct) : 0;
+  if (started){
+    $('#clkLabel').textContent = `${A.name} running`;
+    $('#clkBig').textContent = fmtAt(el);
+    $('#clkSub').textContent = `Started ${clockOf(r.startedAt)} · now ${clockOf(now)}`;
+  } else if (r.start){
+    const until = (todayAt(r.start) - now) / 1000;
+    $('#clkLabel').textContent = `Curtain up ${fmt(r.start)}`;
+    $('#clkBig').textContent = until > 0 ? fmtAt(until) : '0:00';
+    $('#clkSub').textContent = until > 0 ? `until ${A.name} starts by itself` : 'Tap Start now when the act begins';
+  } else {
+    $('#clkLabel').textContent = `${A.name} not started`;
+    $('#clkBig').textContent = '0:00';
+    $('#clkSub').textContent = 'Tap Start now when the act begins';
+  }
+
+  const runs = st.tasks[A.run];
+  let next = null;
+  for (const t of runs) if (!r.done[t.id] && t.at != null && t.at > el && (!next || t.at < next.at)) next = t;
+  const nx = $('#next');
+  if (!started){
+    const first = runs.filter(t => t.at != null).sort((a, b) => a.at - b.at)[0];
+    nx.hidden = !first; nx.classList.remove('soon');
+    if (first){ $('#nextLabel').textContent = 'First cue'; $('#nextIn').textContent = `${fmtAt(first.at)} in`; $('#nextTx').textContent = first.text; }
+  } else if (next){
+    const left = next.at - el;
+    nx.hidden = false; nx.classList.toggle('soon', left <= 30);
+    $('#nextLabel').textContent = 'Next cue in';
+    $('#nextIn').textContent = fmtAt(Math.ceil(left));
+    $('#nextTx').textContent = next.text;
+  } else {
+    nx.hidden = false; nx.classList.remove('soon');
+    $('#nextLabel').textContent = 'Next cue'; $('#nextIn').textContent = '–'; $('#nextTx').textContent = 'No more timed tasks in this act';
+  }
+
+  document.querySelectorAll('#runList .rrow').forEach(li => {
+    const t = runs.find(x => x.id === li.dataset.id); if (!t) return;
+    let cls = '', txt = '';
+    if (r.done[t.id]){ cls = 'done'; txt = '✓ done'; }
+    else if (started && t.at != null){
+      if (el >= t.at && el < t.at + 120){ cls = 'due'; txt = 'NOW'; }
+      else if (el >= t.at + 120){ cls = 'past'; txt = 'passed'; }
+      else { cls = t === next ? 'next' : ''; txt = `in ${Math.ceil((t.at - el) / 60)} min`; }
+    }
+    li.className = 'rrow ' + cls;
+    li.querySelector('.st').textContent = txt;
+  });
+  if (started && next && next.id !== lastNext){
+    lastNext = next.id;
+    const li = document.querySelector(`#runList [data-id="${next.id}"]`);
+    if (li) li.scrollIntoView({block:'center', behavior:'smooth'});
+  }
+}
+$('#clkBtns').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const r = st.run[runAct];
+  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); save(); lastNext = null; renderRun(); }
+  if (b.id === 'cSet') startSheet();
+  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); save(); lastNext = null; renderRun(); toast('Timer restarted from now'); });
+  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); lastNext = null; renderRun(); toast(`${ACTS[runAct].name} reset`); });
+};
+$('#beforeList').onclick = e => {
+  const li = e.target.closest('[data-id]'); if (!li) return;
+  const r = st.run[runAct]; r.done[li.dataset.id] = !r.done[li.dataset.id]; save(); renderRun();
+};
+$('#beforeSummary').onclick = () => { $('#beforeWrap').hidden = !$('#beforeWrap').hidden; };
+$('#runList').onclick = e => {
+  const li = e.target.closest('[data-id]'); if (!li) return;
+  const r = st.run[runAct], id = li.dataset.id;
+  if ($('#recMode').checked){
+    if (!r.startedAt){ toast('Start the timer first'); return; }
+    const t = st.tasks[ACTS[runAct].run].find(x => x.id === id);
+    t.at = Math.floor(elapsed(runAct)); save(); renderRun(); toast(`Recorded ${fmtAt(t.at)} into the act`);
+    return;
+  }
+  r.done[id] = !r.done[id]; save(); tickRun();
+};
+function startSheet(){
+  const r = st.run[runAct], A = ACTS[runAct];
+  openSheet(`
+    <h3>${A.name} start time</h3>
+    <p>The timer starts by itself at this time. You can still start it by hand if the curtain goes up late.</p>
+    <input class="input" type="time" id="stIn" value="${r.start}">
+    <div class="btnrow"><button class="btn" data-q="19:30">7:30 pm</button><button class="btn" data-q="13:00">1:00 pm</button><button class="btn" data-q="14:00">2:00 pm</button></div>
+    <div class="btnrow"><button class="btn" id="stClear">No set time</button><button class="btn primary" id="stSave">Save</button></div>`,
+  (el, close) => {
+    const done = v => { r.start = v; r.autoDay = null; save(); close(); renderRun(); };
+    el.querySelectorAll('[data-q]').forEach(b => b.onclick = () => el.querySelector('#stIn').value = b.dataset.q);
+    el.querySelector('#stClear').onclick = () => done('');
+    el.querySelector('#stSave').onclick = () => done(el.querySelector('#stIn').value);
+  });
+}
 
 /* ---------- bottom sheets ---------- */
 function openSheet(html, wire){
@@ -471,10 +779,11 @@ function openSheet(html, wire){
   wire(scrim, close);
 }
 function timeSheet(t){
+  if (isRun(curSec)) return atSheet(t);
   openSheet(`
     <h3>Time for this task</h3>
     <p>${esc(t.text)}</p>
-    <div class="bigtime" id="tsShow">${t.time ? fmt(t.time) : '--:--'}</div>
+    <div class="bigtime">${t.time ? fmt(t.time) : '--:--'}</div>
     <button class="btn primary big wide" id="tsNow">Stamp now · ${fmt(nowHM())}</button>
     <div class="field"><label for="tsIn">Or type a time</label><input class="input" type="time" id="tsIn" value="${t.time}"></div>
     <div class="btnrow"><button class="btn" id="tsClear">Clear time</button><button class="btn primary" id="tsDone">Done</button></div>`,
@@ -485,25 +794,45 @@ function timeSheet(t){
     el.querySelector('#tsDone').onclick = () => done(el.querySelector('#tsIn').value);
   });
 }
+function atSheet(t){
+  const act = secOf(curSec).act, running = !!st.run[act].startedAt;
+  openSheet(`
+    <h3>Time into ${ACTS[act].name}</h3>
+    <p>${esc(t.text)}</p>
+    <div class="bigtime">${t.at != null ? fmtAt(t.at) : '-:--'}</div>
+    ${running ? `<button class="btn primary big wide" id="asNow">Stamp now · ${fmtAt(elapsed(act))} in</button>` : ''}
+    <div class="field"><span class="flabel">Minutes and seconds after the act starts</span>
+      <div class="minsec">
+        <input class="input" type="number" inputmode="numeric" min="0" id="asMin" value="${t.at != null ? Math.floor(t.at / 60) : ''}" aria-label="Minutes"><span>min</span>
+        <input class="input" type="number" inputmode="numeric" min="0" max="59" id="asSec" value="${t.at != null ? t.at % 60 : ''}" aria-label="Seconds"><span>sec</span>
+      </div>
+    </div>
+    <div class="btnrow"><button class="btn" id="asClear">Clear time</button><button class="btn primary" id="asDone">Done</button></div>`,
+  (el, close) => {
+    const done = v => { t.at = v; save(); close(); renderSection(); };
+    if (running) el.querySelector('#asNow').onclick = () => done(Math.floor(elapsed(act)));
+    el.querySelector('#asClear').onclick = () => done(null);
+    el.querySelector('#asDone').onclick = () => done(readMinSec(el.querySelector('#asMin'), el.querySelector('#asSec')));
+  });
+}
 function editSheet(t){
   openSheet(`
     <h3>Edit task</h3>
     <textarea class="input" id="esText">${esc(t.text)}</textarea>
-    <div class="field"><label>Section</label>
+    <div class="field"><span class="flabel">Section</span>
       <div class="chips" id="esSecs">${SECS.map(s => `<button class="chip" style="--c:${s.c}" data-s="${s.id}" aria-pressed="${s.id === curSec}"><i class="dot"></i>${s.name}</button>`).join('')}</div>
     </div>
     <div class="btnrow"><button class="btn danger" id="esDel">Delete</button><button class="btn primary" id="esSave">Save</button></div>`,
   (el, close) => {
-    let target = curSec, armed = false;
+    let target = curSec;
     el.querySelector('#esSecs').onclick = e => {
       const b = e.target.closest('[data-s]'); if (!b) return;
       target = b.dataset.s;
       el.querySelectorAll('#esSecs .chip').forEach(c => c.setAttribute('aria-pressed', c === b));
     };
-    el.querySelector('#esDel').onclick = e => {
-      if (!armed){ armed = true; e.target.textContent = 'Tap again to delete'; e.target.classList.add('armed'); return; }
+    el.querySelector('#esDel').onclick = e => arm(e.target, 'Tap again to delete', () => {
       st.tasks[curSec].splice(findTask(t.id), 1); save(); close(); renderSection();
-    };
+    });
     el.querySelector('#esSave').onclick = () => {
       t.text = el.querySelector('#esText').value.trim() || t.text;
       if (target !== curSec){
@@ -533,14 +862,13 @@ $('#shareBtn').onclick = () => openSheet(`
     };
   });
 
-let newArmed = false;
-$('#newShow').onclick = e => {
-  if (!newArmed){ newArmed = true; e.target.textContent = 'Tap again to clear every task'; e.target.classList.add('armed'); setTimeout(() => { newArmed = false; e.target.textContent = 'Start a new show (clear all tasks)'; e.target.classList.remove('armed'); }, 4000); return; }
-  newArmed = false; e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
+$('#newShow').onclick = e => arm(e.target, 'Tap again to clear every task', () => {
+  e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
   SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = null;
+  resetAct('a1'); resetAct('a2');
   $('#showName').value = ''; $('#forWhom').value = '';
   save(); go('home'); toast('Cleared. Enter the new show name.');
-};
+});
 
 /* ---------- print ---------- */
 $('#fontSize').oninput = e => { st.fontSize = +e.target.value; save(); buildPages(); };
@@ -579,27 +907,31 @@ function buildPages(){
     if (!fits(head(s))){ newPage(); fits(head(s)); }
     list.forEach((t, i) => {
       const r = document.createElement('div'); r.className = 'prow';
-      r.innerHTML = `<span class="n">${i + 1}</span><span class="t">${t.time ? fmt(t.time).replace(' ', '&#8239;') : ''}</span><span>${esc(t.text)}</span>`;
+      const tl = s.kind === 'run' ? (t.at != null ? fmtAt(t.at) : '') : (t.time ? fmt(t.time).replace(' ', '&#8239;') : '');
+      r.innerHTML = `<span class="n">${i + 1}</span><span class="t">${tl}</span><span>${esc(t.text)}</span>`;
       if (!fits(r)){ newPage(); fits(head(s, true)); fits(r); }
     });
   }
   if (!pages.length){ pv.innerHTML = '<p class="empty">Nothing to print. Pick a section with tasks in it.</p>'; $('#pageCount').textContent = ''; return; }
   pages.forEach((p, i) => p.querySelector('.pn').textContent = `Page ${i + 1} of ${pages.length}`);
-  $('#pageCount').textContent = `${pages.length} A4 landscape page${pages.length === 1 ? '' : 's'} at ${st.fontSize} pt`;
+  $('#pageCount').textContent = `${pages.length} A4 landscape page${pages.length === 1 ? '' : 's'} at ${st.fontSize} pt. Running times are time into the act.`;
   scalePages();
 }
 function scalePages(){
   document.querySelectorAll('.sheet').forEach(s => s.querySelector('.page').style.setProperty('--s', s.clientWidth / 1123));
 }
 addEventListener('resize', scalePages);
-$('#doPrint').onclick = () => {
-  try { window.print(); } catch(e) { toast('Printing is not available here'); }
-};
+$('#doPrint').onclick = () => { try { window.print(); } catch(e) { toast('Printing is not available here'); } };
 
+setInterval(() => {
+  const changed = checkAuto('a1') | checkAuto('a2');
+  if (screen === 'run'){ changed ? renderRun() : tickRun(); }
+}, 500);
+
+checkAuto('a1'); checkAuto('a2');
 go('home');
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
 </script>
-
 </body>
 </html>
