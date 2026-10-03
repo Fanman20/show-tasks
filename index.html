@@ -184,6 +184,7 @@ textarea.input{resize:vertical;min-height:84px}
 .brow.done{opacity:.55}
 .brow.done .tx{text-decoration:line-through}
 #s-run{gap:12px}   /* tighter, so two cues fit under the pinned box */
+html{overflow-anchor:none}   /* the Running page positions the list itself; stop the browser nudging it */
 #s-run .label{margin-bottom:6px}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
 .toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none}
@@ -368,15 +369,17 @@ textarea.input{resize:vertical;min-height:84px}
       <p class="label" id="beforeLabel"></p>
       <ul class="rlist" id="beforeList"></ul>
     </div>
-    <div>
-      <p class="label" id="runLabel"></p>
-      <ul class="rlist" id="runList"></ul>
-    </div>
+    <!-- gone cues sit above the upcoming ones, tucked behind the pinned box -->
     <div id="goneWrap" hidden>
       <p class="label">Already gone</p>
       <ul class="rlist" id="goneList"></ul>
     </div>
+    <div id="upWrap">
+      <p class="label" id="runLabel"></p>
+      <ul class="rlist" id="runList"></ul>
+    </div>
     <label class="toggle rec">Rehearsal: tap a task to record its time <input type="checkbox" id="recMode"></label>
+    <div id="runSpacer" aria-hidden="true"></div>
   </section>
 
   <!-- PRINT -->
@@ -544,7 +547,7 @@ function go(name, arg){
     $('#title').textContent = 'Print';
     renderPrint();
   }
-  window.scrollTo(0, 0);
+  if (name !== 'run') window.scrollTo(0, 0);   // Running sets its own scroll position
 }
 $('#back').onclick = () => {
   if ((screen === 'print' || screen === 'run') && curSec) go('section', curSec);
@@ -778,14 +781,29 @@ function renderRun(){
   $('#runLabel').textContent = `${A.name} running`;
   lastGoneKey = null;   // forces tickRun to rebuild both lists
   tickRun();
+  tuckGone(false);
+}
+// scroll so the upcoming cues start right under the pinned box, with gone cues hidden behind it
+function tuckGone(smooth){
+  const spacer = $('#runSpacer'), up = $('#upWrap');
+  spacer.style.height = '0';
+  if (!st.run[runAct].startedAt){ window.scrollTo(0, 0); return; }
+  const boxBottom = $('.runtop').getBoundingClientRect().bottom;
+  // near the end of the act there may not be enough list left to scroll that far, so pad below it
+  const below = $('#s-run').getBoundingClientRect().bottom - up.getBoundingClientRect().top;
+  spacer.style.height = Math.max(0, innerHeight - boxBottom - below) + 'px';
+  const target = Math.max(0, window.scrollY + up.getBoundingClientRect().top - boxBottom - 4);
+  window.scrollTo({top: target, behavior: smooth ? 'smooth' : 'auto'});
+  // if the smooth slide didn't happen (some browsers skip it), jump into place
+  if (smooth) setTimeout(() => { if (Math.abs(window.scrollY - target) > 4) window.scrollTo(0, target); }, 900);
 }
 const rowHtml = t => `
     <li class="rrow" data-id="${t.id}"><span class="at">${t.at != null ? fmtAt(t.at) : '–'}</span><span class="tx">${esc(t.text)}</span><span class="st"></span></li>`;
-// upcoming cues stay in your order; gone cues (time reached or ticked) drop to the bottom, latest first
+// upcoming cues stay in your order; gone cues (time reached or ticked) move above them in time order
 function splitRuns(el, started){
   const r = st.run[runAct], runs = st.tasks[ACTS[runAct].run];
   const gone = t => r.done[t.id] || (started && t.at != null && el >= t.at);
-  return {up: runs.filter(t => !gone(t)), gone: runs.filter(gone).sort((a, b) => (b.at ?? -1) - (a.at ?? -1))};
+  return {up: runs.filter(t => !gone(t)), gone: runs.filter(gone).sort((a, b) => (a.at ?? -1) - (b.at ?? -1))};
 }
 function tickRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt, now = Date.now();
@@ -809,12 +827,13 @@ function tickRun(){
   const {up, gone} = splitRuns(el, started);
   const key = gone.map(t => t.id).join(',');
   if (key !== lastGoneKey){
-    if (lastGoneKey !== null && started) window.scrollTo({top:0, behavior:'smooth'});
+    const firing = lastGoneKey !== null && started;
     lastGoneKey = key;
     $('#runList').innerHTML = up.length ? up.map(rowHtml).join('')
       : `<li class="empty">${runs.length ? 'All cues have gone.' : `No running tasks for ${A.name} yet.`}</li>`;
     $('#goneWrap').hidden = !gone.length;
     $('#goneList').innerHTML = gone.map(rowHtml).join('');
+    if (firing) tuckGone(true);
   }
   let next = null;
   for (const t of up) if (t.at != null && (!next || t.at < next.at)) next = t;
