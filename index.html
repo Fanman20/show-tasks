@@ -759,8 +759,8 @@ $('#inlineAdd').onclick = () => {
 $('#inlineText').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); $('#inlineAdd').click(); } };
 
 /* ---------- running ---------- */
-let lastGoneKey = null, goUntil = 0, goText = '';
-$('#acttabs').onclick = e => { const b = e.target.closest('[data-act]'); if (b){ runAct = b.dataset.act; goUntil = 0; renderRun(); } };
+let lastGoneKey = null;
+$('#acttabs').onclick = e => { const b = e.target.closest('[data-act]'); if (b){ runAct = b.dataset.act; renderRun(); } };
 
 function renderRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt;
@@ -809,12 +809,7 @@ function tickRun(){
   const {up, gone} = splitRuns(el, started);
   const key = gone.map(t => t.id).join(',');
   if (key !== lastGoneKey){
-    if (lastGoneKey !== null){
-      const was = lastGoneKey.split(',');
-      const fired = gone.find(t => !was.includes(t.id) && !r.done[t.id]);
-      if (fired){ goUntil = now + 10000; goText = fired.text; }
-      if (started) window.scrollTo({top:0, behavior:'smooth'});
-    }
+    if (lastGoneKey !== null && started) window.scrollTo({top:0, behavior:'smooth'});
     lastGoneKey = key;
     $('#runList').innerHTML = up.length ? up.map(rowHtml).join('')
       : `<li class="empty">${runs.length ? 'All cues have gone.' : `No running tasks for ${A.name} yet.`}</li>`;
@@ -824,10 +819,7 @@ function tickRun(){
   let next = null;
   for (const t of up) if (t.at != null && (!next || t.at < next.at)) next = t;
   const nx = $('#next');
-  if (started && now < goUntil){
-    nx.hidden = false; nx.classList.add('soon');
-    $('#nextLabel').textContent = 'Go now'; $('#nextIn').textContent = 'GO'; $('#nextTx').textContent = goText;
-  } else if (!started){
+  if (!started){
     const first = runs.filter(t => t.at != null).sort((a, b) => a.at - b.at)[0];
     nx.hidden = !first; nx.classList.remove('soon');
     if (first){ $('#nextLabel').textContent = 'First cue'; $('#nextIn').textContent = `${fmtAt(first.at)} in`; $('#nextTx').textContent = first.text; }
@@ -860,8 +852,8 @@ $('#clkBtns').onclick = e => {
   const r = st.run[runAct];
   if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); }
   if (b.id === 'cSet') startSheet();
-  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); goUntil = 0; save(); renderRun(); toast('Timer restarted from now'); });
-  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); goUntil = 0; renderRun(); toast(`${ACTS[runAct].name} reset`); });
+  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); toast('Timer restarted from now'); });
+  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); renderRun(); toast(`${ACTS[runAct].name} reset`); });
 };
 $('#beforeList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
