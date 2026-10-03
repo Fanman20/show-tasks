@@ -27,6 +27,13 @@
   --body:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;
   --r:12px;
 }
+/* red wings mode: everything dim red on black, so the screen doesn't glow or spoil night vision */
+html.red{
+  --bg:#000; --surface:#0c0202; --raised:#160404; --line:#3a0d0b;
+  --fg:#d9372c; --muted:#8a2a22; --accent:#ff4a3d; --on-accent:#000; --danger:#ff7a6e;
+  --pre:#a8241d; --a1:#e0392e; --a2:#8f1d17; --post:#c4302a;
+}
+html.red .input::placeholder{color:#5a1c17}
 [hidden]{display:none!important}
 *,*::before,*::after{box-sizing:border-box}
 html{padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
@@ -42,6 +49,19 @@ button{cursor:pointer}
 .bar h1{flex:1;min-width:0;margin:0;font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.02em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
 .bar .back{border:0;background:none;color:var(--accent);font-weight:600;padding:6px 4px;font-size:17px}
+.bar .redbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bar .redbtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+/* tap lock on the Running page: hold to unlock */
+.lockbtn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px 12px;font-weight:700;font-size:14px;
+  -webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:none}
+.lockbtn::before{content:"";position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 45%,transparent)}
+.lockbtn.holding::before{width:100%;transition:width 1s linear}
+.lockbtn span{position:relative}
+body.locked .lockbtn{border-color:var(--accent);color:var(--accent)}
+body.locked #s-run .rlist,body.locked #s-run .clkbtns,body.locked #s-run .acttab,body.locked #s-run .rec,
+body.locked .bar .back,body.locked .bar .redbtn,body.locked #endAct1{pointer-events:none}
+body.locked #s-run .clkbtns,body.locked #s-run .acttab,body.locked .bar .back{opacity:.35}
 
 main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 .screen{display:flex;flex-direction:column;gap:22px}
@@ -82,6 +102,15 @@ textarea.input{resize:vertical;min-height:84px}
 .runbtn small{color:var(--fg);font-size:16px;font-variant-numeric:tabular-nums;padding-right:28px}
 .runbtn.live{background:color-mix(in srgb,var(--c) 26%,var(--surface))}
 .runbtn.live .nm::after{content:" \25CF";color:var(--danger);font-size:.6em;vertical-align:middle}
+.calls{border-color:var(--accent);gap:10px}
+.calls .cnext{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.calls .cname{font-family:var(--display);font-weight:700;font-size:28px;text-transform:uppercase;line-height:1}
+.calls .cin{font-family:var(--display);font-weight:700;font-size:36px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.calls .clist{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.calls .call{border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.calls .call b{display:block;font-size:14px;color:var(--fg)}
+.calls .call.past{opacity:.4}
+.calls .call.on{border-color:var(--accent)}
 .curtain{gap:0;padding:2px 14px}
 .crow{display:flex;align-items:center;gap:10px;padding:10px 0}
 .crow+.crow{border-top:1px solid var(--line)}
@@ -153,7 +182,7 @@ textarea.input{resize:vertical;min-height:84px}
 /* running screen */
 .runtop{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--barh,49px));z-index:4;background:var(--bg);
   margin:-16px -16px 0;padding:10px 16px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);box-shadow:0 10px 14px -10px #000c}
-.acttabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acttabs{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
 .acttab{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px;font-family:var(--display);font-weight:700;font-size:20px;text-transform:uppercase}
 .acttab[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,var(--surface))}
 .clock{border-color:var(--c);gap:14px;padding:14px 12px}
@@ -168,7 +197,8 @@ textarea.input{resize:vertical;min-height:84px}
 .next .nin{font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums;align-self:flex-start}
 .next .ntx{font-size:18px;font-weight:600;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .next.soon .nin{color:var(--on-accent);background:var(--accent);border-radius:6px;padding:0 8px}
-.clkbtns{display:flex;gap:8px}
+.clkbtns{display:flex;flex-wrap:wrap;gap:8px}
+.clkbtns .btn.full{flex-basis:100%}
 .clkbtns .btn{flex:1;padding:12px 10px;font-size:16px}
 .clkbtns .btn.big{padding:12px 10px;font-size:17px}
 
@@ -257,6 +287,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 <header class="bar">
   <button class="back" id="back" hidden>&#8249; Back</button>
   <h1 id="title">Show Tasks</h1>
+  <button class="redbtn" id="redBtn" aria-pressed="false" aria-label="Red wings mode">Red</button>
 </header>
 
 <main>
@@ -264,8 +295,9 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
   <section class="screen" id="s-dash" hidden>
     <div class="dashhead"><span class="for" id="dashFor"></span><span class="now" id="dashNow"></span></div>
     <div class="dashrun" id="dashRun"></div>
+    <div class="card calls" id="dashCalls" hidden></div>
     <div>
-      <p class="label">Curtain up</p>
+      <p class="label">Curtain up and interval</p>
       <div class="card curtain" id="dashStart"></div>
     </div>
     <div>
@@ -329,6 +361,17 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       <div class="arrange" id="arrange"></div>
     </div>
 
+    <div class="card">
+      <p class="label" style="margin:0">Backup and share your list</p>
+      <div class="btnrow">
+        <button class="btn" id="copyText">Copy as text</button>
+        <button class="btn" id="saveBackup">Save backup file</button>
+      </div>
+      <button class="btn" id="loadBackup">Load a backup file</button>
+      <input type="file" id="backupFile" accept=".json,application/json" hidden>
+      <p class="hint">A backup keeps your list safe if the phone is lost or replaced. Send the file to a colleague and they can load your tasks into their own copy of the app.</p>
+    </div>
+
     <div class="foot">
       <button class="btn" id="printAll">Print all sections</button>
       <button class="btn" id="shareBtn">Give this app to someone</button>
@@ -359,6 +402,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       <div class="acttabs" id="acttabs">
         <button class="acttab" data-act="a1" style="--c:var(--a1)">Act 1</button>
         <button class="acttab" data-act="a2" style="--c:var(--a2)">Act 2</button>
+        <button class="lockbtn" id="lockBtn"><span>Lock</span></button>
       </div>
       <div class="card clock">
         <div class="clkgrid">
@@ -389,6 +433,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       <p class="label" id="runLabel"></p>
       <ul class="rlist" id="runList"></ul>
     </div>
+    <button class="btn wide" id="endAct1" hidden></button>
     <label class="toggle rec">Rehearsal: tap a task to record its time <input type="checkbox" id="recMode"></label>
     <div id="runSpacer" aria-hidden="true"></div>
   </section>
@@ -478,7 +523,17 @@ let st;
 try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
 st = addTestCues(migrate(st));
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
+st.interval = st.interval || {mins:20, startedAt:null};
 save();
+
+/* red wings mode */
+function applyRed(){
+  document.documentElement.classList.toggle('red', !!st.red);
+  $('#redBtn').setAttribute('aria-pressed', !!st.red);
+  $('meta[name="theme-color"]').content = st.red ? '#000000' : '#10131a';
+}
+$('#redBtn').onclick = () => { st.red = !st.red; save(); applyRed(); };
+applyRed();
 
 let addSec = null, curSec = null, timing = false, screen = 'home', runAct = 'a1';
 
@@ -523,9 +578,27 @@ function resetAct(act){
   const r = st.run[act];
   r.startedAt = null; r.done = {}; r.autoDay = todayKey(); save();
 }
+// interval: counts down from "End Act 1", then Act 2 starts by itself
+const intervalEnd = () => st.interval.startedAt + st.interval.mins * 60e3;
+// theatre calls before Act 1, counted back from curtain up
+const CALLS = [['Half', 30], ['Quarter', 15], ['Beginners', 5]];
+function callInfo(){
+  const r = st.run.a1, now = Date.now();
+  if (!r.start || r.startedAt || r.ended === todayKey()) return null;
+  const curtain = todayAt(r.start);
+  if (now >= curtain || curtain - now > 12 * 3600e3) return null;
+  const calls = CALLS.map(([n, m]) => ({n, at: curtain - m * 60e3}));
+  return {curtain, calls, next: calls.find(c => c.at > now), now};
+}
 function checkAuto(act){
   const r = st.run[act], now = Date.now();
   if (r.startedAt && now - r.startedAt > 6 * 3600e3){ r.startedAt = null; r.done = {}; save(); return true; }  // last night's show
+  if (act === 'a2' && st.interval.startedAt){
+    const end = intervalEnd();
+    if (r.startedAt || now - end > 3 * 3600e3){ st.interval.startedAt = null; save(); return true; }
+    if (now >= end){ r.startedAt = end; r.autoDay = todayKey(); st.interval.startedAt = null; save(); return true; }
+    return false;
+  }
   if (!r.startedAt && r.start && r.autoDay !== todayKey()){
     const sched = todayAt(r.start);
     if (now >= sched && now - sched < 3 * 3600e3){ r.startedAt = sched; r.autoDay = todayKey(); save(); return true; }
@@ -548,6 +621,7 @@ function go(name, arg){
   ['dash','check','home','section','run','print'].forEach(s => $('#s-' + s).hidden = s !== name);
   $('#back').hidden = name === 'dash';
   wake(name === 'run');
+  if (name !== 'run') setLock(false);
   if (name === 'dash'){ curSec = null; $('#title').textContent = st.show || 'Show Tasks'; renderDash(); }
   if (name === 'check'){ chkSec = arg; $('#title').textContent = st.show || 'Show Tasks'; renderCheck(); }
   if (name === 'home'){ $('#title').textContent = 'Add and arrange'; renderHome(); }
@@ -585,7 +659,9 @@ function renderDash(){
   $('#dashStart').innerHTML = Object.entries(ACTS).map(([id, a]) => { const r = st.run[id]; return `
     <div class="crow"><i class="dot" style="--c:${a.c}"></i><span class="cn">${a.name}</span>
       <span class="cv ${r.start ? '' : 'off'}">${r.start ? fmt(r.start) : 'Start by hand'}</span>
-      <button class="btn" data-start="${id}">${r.start ? 'Change' : 'Set time'}</button></div>`; }).join('');
+      <button class="btn" data-start="${id}">${r.start ? 'Change' : 'Set time'}</button></div>`; }).join('') + `
+    <div class="crow"><i class="dot" style="--c:var(--muted)"></i><span class="cn">Interval</span>
+      <span class="cv">${st.interval.mins} min</span><button class="btn" data-int>Change</button></div>`;
   $('#dashChecks').innerHTML = CHECKS.map(id => {
     const s = secOf(id), n = st.tasks[id].length, d = doneCount(id);
     return `<button class="secbtn ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-chk="${id}">
@@ -594,11 +670,25 @@ function renderDash(){
   }).join('');
   tickDash();
 }
+function renderCalls(){
+  const ci = callInfo(), el = $('#dashCalls');
+  el.hidden = !ci; if (!ci) return;
+  const left = at => fmtAt(Math.ceil((at - ci.now) / 1000));
+  const head = ci.next
+    ? `<span class="cname">${ci.next.n} call</span><span class="cin">in ${left(ci.next.at)}</span>`
+    : `<span class="cname">Curtain up</span><span class="cin">in ${left(ci.curtain)}</span>`;
+  el.innerHTML = `<p class="label" style="margin:0">Calls · curtain up ${fmt(st.run.a1.start)}</p>
+    <div class="cnext">${head}</div>
+    <div class="clist">${ci.calls.map(c => `<div class="call ${c.at <= ci.now ? 'past' : ''} ${c === ci.next ? 'on' : ''}"><b>${c.n}</b>${clockOf(c.at)}</div>`).join('')}</div>`;
+}
 function tickDash(){
   $('#dashNow').textContent = clockOf(Date.now());
+  renderCalls();
   document.querySelectorAll('#dashRun [data-run]').forEach(b => {
     const act = b.dataset.run, r = st.run[act];
     let txt = r.start ? `Starts ${fmt(r.start)}` : 'Start by hand';
+    if (r.ended === todayKey()) txt = `${ACTS[act].name} finished`;
+    if (act === 'a2' && st.interval.startedAt) txt = `Interval · Act 2 starts in ${fmtAt(Math.ceil((intervalEnd() - Date.now()) / 1000))}`;
     if (r.startedAt){
       const el = elapsed(act);
       const next = st.tasks[ACTS[act].run].filter(t => !r.done[t.id] && t.at != null && t.at > el).sort((x, y) => x.at - y.at)[0];
@@ -611,7 +701,25 @@ function tickDash(){
 $('#dashRun').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
 $('#dashChecks').onclick = e => { const b = e.target.closest('[data-chk]'); if (b) go('check', b.dataset.chk); };
 $('#toSetup').onclick = () => go('home');
-$('#dashStart').onclick = e => { const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start); };
+$('#dashStart').onclick = e => {
+  const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start);
+  if (e.target.closest('[data-int]')) intervalSheet();
+};
+function intervalSheet(){
+  openSheet(`
+    <h3>Interval length</h3>
+    <p>When you tap End Act 1 on the Running page, the interval counts down from this, then Act 2 starts by itself.</p>
+    <div class="minsec"><input class="input" type="number" inputmode="numeric" min="1" id="intIn" value="${st.interval.mins}" aria-label="Interval minutes"><span>min</span></div>
+    <div class="btnrow"><button class="btn" data-m="15">15 min</button><button class="btn" data-m="20">20 min</button><button class="btn" data-m="25">25 min</button></div>
+    <button class="btn primary big wide" id="intSave">Save</button>`,
+  (el, close) => {
+    el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => el.querySelector('#intIn').value = b.dataset.m);
+    el.querySelector('#intSave').onclick = () => {
+      st.interval.mins = Math.max(1, parseInt(el.querySelector('#intIn').value) || 20);
+      save(); close(); screen === 'run' ? renderRun() : renderDash();
+    };
+  });
+}
 
 function renderCheck(){
   const s = secOf(chkSec), list = st.tasks[chkSec], d = doneMap(chkSec);
@@ -785,9 +893,14 @@ function renderRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt;
   $('#s-run').style.setProperty('--c', A.c);
   document.querySelectorAll('.acttab').forEach(b => b.setAttribute('aria-pressed', b.dataset.act === runAct));
+  const inInterval = runAct === 'a2' && !started && st.interval.startedAt;
   $('#clkBtns').innerHTML = started
     ? `<button class="btn" id="cRestart">Restart from now</button><button class="btn danger" id="cReset">Stop and reset</button>`
-    : `<button class="btn primary big" id="cStart">Start now</button><button class="btn" id="cSet">${r.start ? 'Change start time' : 'Set start time'}</button>`;
+    : inInterval
+      ? `<button class="btn primary big" id="cStart">Start Act 2 now</button><button class="btn" id="cCancelInt">Cancel interval</button>`
+      : `<button class="btn primary big" id="cStart">Start now</button><button class="btn" id="cSet">${r.start ? 'Change start time' : 'Set start time'}</button>`;
+  $('#endAct1').hidden = !(runAct === 'a1' && started);
+  $('#endAct1').textContent = `End Act 1 · start ${st.interval.mins} min interval`;
 
   const before = st.tasks[A.before], runs = st.tasks[A.run];
   $('#beforeLabel').textContent = `Before ${A.name}`;
@@ -828,11 +941,20 @@ function tickRun(){
     $('#clkLabel').textContent = `${A.name} running`;
     $('#clkBig').textContent = fmtAt(el);
     $('#clkSub').textContent = `Started ${clockOf(r.startedAt)} · now ${clockOf(now)}`;
+  } else if (runAct === 'a2' && st.interval.startedAt){
+    $('#clkLabel').textContent = 'Interval';
+    $('#clkBig').textContent = fmtAt(Math.ceil((intervalEnd() - now) / 1000));
+    $('#clkSub').textContent = `Act 2 starts by itself at ${clockOf(intervalEnd())}`;
+  } else if (r.ended === todayKey()){
+    $('#clkLabel').textContent = `${A.name} finished`;
+    $('#clkBig').textContent = '0:00';
+    $('#clkSub').textContent = 'Tap Start now to run it again';
   } else if (r.start){
-    const until = (todayAt(r.start) - now) / 1000;
+    const until = (todayAt(r.start) - now) / 1000, ci = runAct === 'a1' && callInfo();
     $('#clkLabel').textContent = `Curtain up ${fmt(r.start)}`;
     $('#clkBig').textContent = until > 0 ? fmtAt(until) : '0:00';
-    $('#clkSub').textContent = until > 0 ? `until ${A.name} starts by itself` : 'Tap Start now when the act begins';
+    $('#clkSub').textContent = ci && ci.next ? `${ci.next.n} call in ${fmtAt(Math.ceil((ci.next.at - now) / 1000))}`
+      : until > 0 ? `until ${A.name} starts by itself` : 'Tap Start now when the act begins';
   } else {
     $('#clkLabel').textContent = `${A.name} not started`;
     $('#clkBig').textContent = '0:00';
@@ -885,11 +1007,36 @@ function tickRun(){
 $('#clkBtns').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   const r = st.run[runAct];
-  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); }
+  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); r.ended = null; if (runAct === 'a2') st.interval.startedAt = null; save(); renderRun(); }
   if (b.id === 'cSet') startSheet();
+  if (b.id === 'cCancelInt') arm(b, 'Tap again to cancel', () => { st.interval.startedAt = null; save(); renderRun(); toast('Interval cancelled'); });
   if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); toast('Timer restarted from now'); });
   if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); renderRun(); toast(`${ACTS[runAct].name} reset`); });
 };
+$('#endAct1').onclick = e => arm(e.target, 'Tap again to end Act 1', () => {
+  resetAct('a1'); st.run.a1.ended = todayKey(); st.interval.startedAt = Date.now(); save();
+  toast(`Interval started · ${st.interval.mins} min`);
+  go('run', 'a2');
+});
+
+/* tap lock: tap Lock to lock; press and hold to unlock */
+let holdT;
+function setLock(on){
+  document.body.classList.toggle('locked', on);
+  $('#lockBtn span').textContent = on ? 'Hold to unlock' : 'Lock';
+}
+$('#lockBtn').addEventListener('pointerdown', e => {
+  const b = e.currentTarget;
+  if (!document.body.classList.contains('locked')){ setLock(true); toast('Locked. Press and hold the button to unlock.'); return; }
+  e.preventDefault();
+  b.classList.add('holding');
+  holdT = setTimeout(() => { b.classList.remove('holding'); setLock(false); toast('Unlocked'); }, 1000);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('#lockBtn').addEventListener(ev, e => {
+  clearTimeout(holdT); e.currentTarget.classList.remove('holding');
+}));
+$('#lockBtn').addEventListener('contextmenu', e => e.preventDefault());
+
 $('#beforeList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
   const r = st.run[runAct]; r.done[li.dataset.id] = !r.done[li.dataset.id]; save(); renderRun();
@@ -914,7 +1061,7 @@ function startSheet(act = runAct){
     <div class="btnrow"><button class="btn" data-q="19:30">7:30 pm</button><button class="btn" data-q="13:00">1:00 pm</button><button class="btn" data-q="14:00">2:00 pm</button></div>
     <div class="btnrow"><button class="btn" id="stClear">No set time</button><button class="btn primary" id="stSave">Save</button></div>`,
   (el, close) => {
-    const done = v => { r.start = v; r.autoDay = null; save(); close(); screen === 'run' ? renderRun() : renderDash(); };
+    const done = v => { r.start = v; r.autoDay = null; r.ended = null; save(); close(); screen === 'run' ? renderRun() : renderDash(); };
     el.querySelectorAll('[data-q]').forEach(b => b.onclick = () => el.querySelector('#stIn').value = b.dataset.q);
     el.querySelector('#stClear').onclick = () => done('');
     el.querySelector('#stSave').onclick = () => done(el.querySelector('#stIn').value);
@@ -1004,6 +1151,7 @@ $('#shareBtn').onclick = () => openSheet(`
     <li>They tap the Share button, then <b>Add to Home Screen</b>.</li>
   </ol>
   <p>Each person's tasks stay on their own phone. Your list is not shared with them, and theirs is not shared with you.</p>
+  <p>To give them a copy of your tasks too, use Save backup file and send them the file. They open the app and tap Load a backup file.</p>
   <div class="input" style="font-size:15px;overflow-wrap:anywhere" id="appLink">https://fanman20.github.io/show-tasks/</div>
   <button class="btn primary big wide" id="copyLink">Copy link</button>`,
   (el, close) => {
@@ -1014,10 +1162,69 @@ $('#shareBtn').onclick = () => openSheet(`
     };
   });
 
+/* ---------- backup and share ---------- */
+function listText(){
+  const out = [st.show || 'Show', st.forWhom ? `Tasks for: ${st.forWhom}` : ''].filter(Boolean);
+  for (const s of SECS){
+    const list = st.tasks[s.id]; if (!list.length) continue;
+    out.push('', s.name.toUpperCase());
+    list.forEach((t, i) => { const tl = s.kind === 'run' ? (t.at != null ? fmtAt(t.at) + ' in' : '') : fmt(t.time); out.push(`${i + 1}. ${tl ? tl + ' - ' : ''}${t.text}`); });
+  }
+  return out.join('\n');
+}
+$('#copyText').onclick = () => {
+  const txt = listText();
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('List copied. Paste it into Notes, Messages or an email.', 3500))
+    .catch(() => openSheet(`<h3>Your list as text</h3><p>Select it all, then tap Copy.</p><textarea class="input" id="ltxt" rows="12" readonly>${esc(txt)}</textarea>`,
+      el => { const ta = el.querySelector('#ltxt'); ta.focus(); ta.select(); }));
+};
+$('#saveBackup').onclick = () => {
+  const data = {app:'show-tasks', v:2, saved:new Date().toISOString(), show:st.show, forWhom:st.forWhom, tasks:st.tasks,
+    starts:{a1:st.run.a1.start, a2:st.run.a2.start}, interval:st.interval.mins, fontSize:st.fontSize, newPage:st.newPage};
+  const name = ((st.show || 'show').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'show') + '-tasks.json';
+  const file = new File([JSON.stringify(data, null, 1)], name, {type:'application/json'});
+  // iPhone: the share sheet lets you save to Files, AirDrop it, or send it by Messages or email
+  if (navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file], title:name}).catch(() => {}); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+$('#loadBackup').onclick = () => $('#backupFile').click();
+$('#backupFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  let d;
+  try { d = JSON.parse(await f.text()); } catch(err) {}
+  if (!d || d.app !== 'show-tasks' || !d.tasks || !SECS.every(s => Array.isArray(d.tasks[s.id]))){
+    toast('That file is not a Show Tasks backup.'); return;
+  }
+  const n = SECS.reduce((sum, s) => sum + d.tasks[s.id].length, 0);
+  openSheet(`
+    <h3>Load this backup?</h3>
+    <p><b>${esc(d.show || 'Untitled show')}</b>${d.forWhom ? ' · ' + esc(d.forWhom) : ''} · ${plural(n)}${d.saved ? ' · saved ' + new Date(d.saved).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : ''}</p>
+    <p>This replaces every task in the app now. Save a backup of your own list first if you want to keep it.</p>
+    <div class="btnrow"><button class="btn" id="lbCancel">Cancel</button><button class="btn primary" id="lbGo">Replace my list</button></div>`,
+  (el, close) => {
+    el.querySelector('#lbCancel').onclick = close;
+    el.querySelector('#lbGo').onclick = () => {
+      st.show = String(d.show || ''); st.forWhom = String(d.forWhom || '');
+      for (const s of SECS) st.tasks[s.id] = d.tasks[s.id].filter(t => t && t.text).map(t => ({
+        id: t.id || uid(), text: String(t.text), time: typeof t.time === 'string' ? t.time : '', at: Number.isFinite(t.at) ? t.at : null}));
+      if (d.starts){ st.run.a1.start = d.starts.a1 || ''; st.run.a2.start = d.starts.a2 || ''; }
+      if (d.interval) st.interval.mins = d.interval;
+      resetAct('a1'); resetAct('a2'); st.interval.startedAt = null; st.ticks = {};
+      $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
+      save(); close(); renderHome(); toast(`Loaded ${plural(n)}`);
+    };
+  });
+};
+
 $('#newShow').onclick = e => arm(e.target, 'Tap again to clear every task', () => {
   e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
   SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = null;
-  resetAct('a1'); resetAct('a2'); st.ticks = {};
+  resetAct('a1'); resetAct('a2'); st.ticks = {}; st.interval.startedAt = null;
   $('#showName').value = ''; $('#forWhom').value = '';
   save(); go('home'); toast('Cleared. Enter the new show name.');
 });
