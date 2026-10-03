@@ -82,6 +82,13 @@ textarea.input{resize:vertical;min-height:84px}
 .runbtn small{color:var(--fg);font-size:16px;font-variant-numeric:tabular-nums;padding-right:28px}
 .runbtn.live{background:color-mix(in srgb,var(--c) 26%,var(--surface))}
 .runbtn.live .nm::after{content:" \25CF";color:var(--danger);font-size:.6em;vertical-align:middle}
+.curtain{gap:0;padding:2px 14px}
+.crow{display:flex;align-items:center;gap:10px;padding:10px 0}
+.crow+.crow{border-top:1px solid var(--line)}
+.crow .cn{font-weight:700;min-width:48px}
+.crow .cv{flex:1;font-family:var(--display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+.crow .cv.off{font-family:var(--body);font-weight:500;font-size:16px;color:var(--muted)}
+.crow .btn{padding:8px 14px;font-size:15px}
 .dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dashgrid .secbtn{min-height:96px}
 .dashgrid .secbtn .ct.alldone{color:var(--post);font-weight:700}
@@ -257,6 +264,10 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
   <section class="screen" id="s-dash" hidden>
     <div class="dashhead"><span class="for" id="dashFor"></span><span class="now" id="dashNow"></span></div>
     <div class="dashrun" id="dashRun"></div>
+    <div>
+      <p class="label">Curtain up</p>
+      <div class="card curtain" id="dashStart"></div>
+    </div>
     <div>
       <p class="label">Checklists</p>
       <div class="dashgrid" id="dashChecks"></div>
@@ -571,6 +582,10 @@ function renderDash(){
   $('#dashFor').textContent = st.forWhom || '';
   $('#dashRun').innerHTML = Object.entries(ACTS).map(([id, a]) => `
     <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small></small></button>`).join('');
+  $('#dashStart').innerHTML = Object.entries(ACTS).map(([id, a]) => { const r = st.run[id]; return `
+    <div class="crow"><i class="dot" style="--c:${a.c}"></i><span class="cn">${a.name}</span>
+      <span class="cv ${r.start ? '' : 'off'}">${r.start ? fmt(r.start) : 'Start by hand'}</span>
+      <button class="btn" data-start="${id}">${r.start ? 'Change' : 'Set time'}</button></div>`; }).join('');
   $('#dashChecks').innerHTML = CHECKS.map(id => {
     const s = secOf(id), n = st.tasks[id].length, d = doneCount(id);
     return `<button class="secbtn ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-chk="${id}">
@@ -596,6 +611,7 @@ function tickDash(){
 $('#dashRun').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
 $('#dashChecks').onclick = e => { const b = e.target.closest('[data-chk]'); if (b) go('check', b.dataset.chk); };
 $('#toSetup').onclick = () => go('home');
+$('#dashStart').onclick = e => { const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start); };
 
 function renderCheck(){
   const s = secOf(chkSec), list = st.tasks[chkSec], d = doneMap(chkSec);
@@ -859,7 +875,7 @@ function tickRun(){
     if (r.done[t.id]){ cls = 'done'; txt = '✓ done'; }
     else if (started && t.at != null){
       if (el >= t.at){ cls = 'past'; txt = 'gone'; }
-      else { cls = t === next ? 'next' : ''; txt = `in ${Math.ceil((t.at - el) / 60)} min`; }
+      else { cls = t === next ? 'next' : ''; txt = `in ${fmtAt(Math.ceil(t.at - el))}`; }   // live countdown to this cue
     }
     li.className = 'rrow ' + cls;
     li.querySelector('.st').textContent = txt;
@@ -889,8 +905,8 @@ $('#runList').onclick = $('#goneList').onclick = e => {
   }
   r.done[id] = !r.done[id]; save(); tickRun();
 };
-function startSheet(){
-  const r = st.run[runAct], A = ACTS[runAct];
+function startSheet(act = runAct){
+  const r = st.run[act], A = ACTS[act];
   openSheet(`
     <h3>${A.name} start time</h3>
     <p>The timer starts by itself at this time. You can still start it by hand if the curtain goes up late.</p>
@@ -898,7 +914,7 @@ function startSheet(){
     <div class="btnrow"><button class="btn" data-q="19:30">7:30 pm</button><button class="btn" data-q="13:00">1:00 pm</button><button class="btn" data-q="14:00">2:00 pm</button></div>
     <div class="btnrow"><button class="btn" id="stClear">No set time</button><button class="btn primary" id="stSave">Save</button></div>`,
   (el, close) => {
-    const done = v => { r.start = v; r.autoDay = null; save(); close(); renderRun(); };
+    const done = v => { r.start = v; r.autoDay = null; save(); close(); screen === 'run' ? renderRun() : renderDash(); };
     el.querySelectorAll('[data-q]').forEach(b => b.onclick = () => el.querySelector('#stIn').value = b.dataset.q);
     el.querySelector('#stClear').onclick = () => done('');
     el.querySelector('#stSave').onclick = () => done(el.querySelector('#stIn').value);
