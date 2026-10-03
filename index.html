@@ -134,23 +134,23 @@ textarea.input{resize:vertical;min-height:84px}
 .runtop{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--barh,49px));z-index:4;background:var(--bg);
   margin:-16px -16px 0;padding:10px 16px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);box-shadow:0 10px 14px -10px #000c}
 .acttabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.acttab{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px;font-family:var(--display);font-weight:700;font-size:19px;text-transform:uppercase}
+.acttab{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px;font-family:var(--display);font-weight:700;font-size:20px;text-transform:uppercase}
 .acttab[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,var(--surface))}
-.clock{border-color:var(--c);gap:10px;padding:10px 12px}
-.clkgrid{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:stretch}
+.clock{border-color:var(--c);gap:14px;padding:14px 12px}
+.clkgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:stretch}
 .clkcol{display:flex;flex-direction:column;gap:1px}
-.clk-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c);white-space:nowrap}
-.clk-big{font-family:var(--display);font-weight:700;font-size:62px;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:.01em}
-.clk-big.long{font-size:44px;line-height:1.3}
-.clk-sub{color:var(--muted);font-size:12px;width:0;min-width:100%}  /* wraps to the clock's width instead of widening it */
+.clk-label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--c);white-space:nowrap}
+.clk-big{font-family:var(--display);font-weight:700;font-size:68px;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.clk-big.long{font-size:48px;line-height:1.35}
+.clk-sub{color:var(--muted);font-size:13px;width:0;min-width:100%}  /* wraps to the clock's width instead of widening it */
 .next{border-left:1px solid var(--line);padding-left:14px;display:flex;flex-direction:column;gap:1px;min-width:0}
-.next .nl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.next .nin{font-family:var(--display);font-weight:700;font-size:36px;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums;align-self:flex-start}
-.next .ntx{font-size:15px;font-weight:600;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.next .nl{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.next .nin{font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums;align-self:flex-start}
+.next .ntx{font-size:18px;font-weight:600;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .next.soon .nin{color:var(--on-accent);background:var(--accent);border-radius:6px;padding:0 8px}
 .clkbtns{display:flex;gap:8px}
-.clkbtns .btn{flex:1;padding:8px 10px;font-size:15px}
-.clkbtns .btn.big{padding:8px 10px;font-size:16px}
+.clkbtns .btn{flex:1;padding:12px 10px;font-size:16px}
+.clkbtns .btn.big{padding:12px 10px;font-size:17px}
 
 .rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .rrow{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;user-select:none;-webkit-user-select:none}
@@ -346,6 +346,10 @@ textarea.input{resize:vertical;min-height:84px}
       <p class="label" id="runLabel"></p>
       <ul class="rlist" id="runList"></ul>
     </div>
+    <div id="goneWrap" hidden>
+      <p class="label">Already gone</p>
+      <ul class="rlist" id="goneList"></ul>
+    </div>
     <label class="toggle rec">Rehearsal: tap a task to record its time <input type="checkbox" id="recMode"></label>
   </section>
 
@@ -422,9 +426,17 @@ function migrate(s){
   s.v = 2;
   return s;
 }
+// one-off: quick test cues so the Running page can be tried without waiting minutes
+function addTestCues(s){
+  if (s.testCuesAdded) return s;
+  for (const a of ['a1', 'a2'])
+    s.tasks[a].unshift(...[10, 20, 30, 35].map((at, i) => ({id:uid(), text:`Test cue ${i + 1} (${at} s)`, time:'', at})));
+  s.testCuesAdded = true;
+  return s;
+}
 let st;
 try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
-st = migrate(st);
+st = addTestCues(migrate(st));
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
 save();
 
@@ -662,8 +674,8 @@ $('#inlineAdd').onclick = () => {
 $('#inlineText').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); $('#inlineAdd').click(); } };
 
 /* ---------- running ---------- */
-let lastNext = null;
-$('#acttabs').onclick = e => { const b = e.target.closest('[data-act]'); if (b){ runAct = b.dataset.act; lastNext = null; renderRun(); } };
+let lastGoneKey = null, goUntil = 0, goText = '';
+$('#acttabs').onclick = e => { const b = e.target.closest('[data-act]'); if (b){ runAct = b.dataset.act; goUntil = 0; renderRun(); } };
 
 function renderRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt;
@@ -682,10 +694,16 @@ function renderRun(){
   $('#beforeList').innerHTML = before.map(t => `
     <li class="rrow brow ${r.done[t.id] ? 'done' : ''}" data-id="${t.id}"><span class="box">${r.done[t.id] ? '&#10003;' : ''}</span><span class="tx">${esc(t.text)}</span></li>`).join('');
   $('#runLabel').textContent = `${A.name} running`;
-  $('#runList').innerHTML = runs.length ? runs.map(t => `
-    <li class="rrow" data-id="${t.id}"><span class="at">${t.at != null ? fmtAt(t.at) : '–'}</span><span class="tx">${esc(t.text)}</span><span class="st"></span></li>`).join('')
-    : `<li class="empty">No running tasks for ${A.name} yet.</li>`;
+  lastGoneKey = null;   // forces tickRun to rebuild both lists
   tickRun();
+}
+const rowHtml = t => `
+    <li class="rrow" data-id="${t.id}"><span class="at">${t.at != null ? fmtAt(t.at) : '–'}</span><span class="tx">${esc(t.text)}</span><span class="st"></span></li>`;
+// upcoming cues stay in your order; gone cues (time reached or ticked) drop to the bottom, latest first
+function splitRuns(el, started){
+  const r = st.run[runAct], runs = st.tasks[ACTS[runAct].run];
+  const gone = t => r.done[t.id] || (started && t.at != null && el >= t.at);
+  return {up: runs.filter(t => !gone(t)), gone: runs.filter(gone).sort((a, b) => (b.at ?? -1) - (a.at ?? -1))};
 }
 function tickRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt, now = Date.now();
@@ -706,10 +724,28 @@ function tickRun(){
   }
 
   const runs = st.tasks[A.run];
+  const {up, gone} = splitRuns(el, started);
+  const key = gone.map(t => t.id).join(',');
+  if (key !== lastGoneKey){
+    if (lastGoneKey !== null){
+      const was = lastGoneKey.split(',');
+      const fired = gone.find(t => !was.includes(t.id) && !r.done[t.id]);
+      if (fired){ goUntil = now + 10000; goText = fired.text; }
+      if (started) window.scrollTo({top:0, behavior:'smooth'});
+    }
+    lastGoneKey = key;
+    $('#runList').innerHTML = up.length ? up.map(rowHtml).join('')
+      : `<li class="empty">${runs.length ? 'All cues have gone.' : `No running tasks for ${A.name} yet.`}</li>`;
+    $('#goneWrap').hidden = !gone.length;
+    $('#goneList').innerHTML = gone.map(rowHtml).join('');
+  }
   let next = null;
-  for (const t of runs) if (!r.done[t.id] && t.at != null && t.at > el && (!next || t.at < next.at)) next = t;
+  for (const t of up) if (t.at != null && (!next || t.at < next.at)) next = t;
   const nx = $('#next');
-  if (!started){
+  if (started && now < goUntil){
+    nx.hidden = false; nx.classList.add('soon');
+    $('#nextLabel').textContent = 'Go now'; $('#nextIn').textContent = 'GO'; $('#nextTx').textContent = goText;
+  } else if (!started){
     const first = runs.filter(t => t.at != null).sort((a, b) => a.at - b.at)[0];
     nx.hidden = !first; nx.classList.remove('soon');
     if (first){ $('#nextLabel').textContent = 'First cue'; $('#nextIn').textContent = `${fmtAt(first.at)} in`; $('#nextTx').textContent = first.text; }
@@ -724,13 +760,12 @@ function tickRun(){
     $('#nextLabel').textContent = 'Next cue'; $('#nextIn').textContent = '–'; $('#nextTx').textContent = 'No more timed tasks in this act';
   }
 
-  document.querySelectorAll('#runList .rrow').forEach(li => {
+  document.querySelectorAll('#runList .rrow, #goneList .rrow').forEach(li => {
     const t = runs.find(x => x.id === li.dataset.id); if (!t) return;
     let cls = '', txt = '';
     if (r.done[t.id]){ cls = 'done'; txt = '✓ done'; }
     else if (started && t.at != null){
-      if (el >= t.at && el < t.at + 120){ cls = 'due'; txt = 'NOW'; }
-      else if (el >= t.at + 120){ cls = 'past'; txt = 'passed'; }
+      if (el >= t.at){ cls = 'past'; txt = 'gone'; }
       else { cls = t === next ? 'next' : ''; txt = `in ${Math.ceil((t.at - el) / 60)} min`; }
     }
     li.className = 'rrow ' + cls;
@@ -741,17 +776,17 @@ function tickRun(){
 $('#clkBtns').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   const r = st.run[runAct];
-  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); save(); lastNext = null; renderRun(); }
+  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); }
   if (b.id === 'cSet') startSheet();
-  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); save(); lastNext = null; renderRun(); toast('Timer restarted from now'); });
-  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); lastNext = null; renderRun(); toast(`${ACTS[runAct].name} reset`); });
+  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); goUntil = 0; save(); renderRun(); toast('Timer restarted from now'); });
+  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); goUntil = 0; renderRun(); toast(`${ACTS[runAct].name} reset`); });
 };
 $('#beforeList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
   const r = st.run[runAct]; r.done[li.dataset.id] = !r.done[li.dataset.id]; save(); renderRun();
 };
 $('#beforeSummary').onclick = () => { $('#beforeWrap').hidden = !$('#beforeWrap').hidden; };
-$('#runList').onclick = e => {
+$('#runList').onclick = $('#goneList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
   const r = st.run[runAct], id = li.dataset.id;
   if ($('#recMode').checked){
