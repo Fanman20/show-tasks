@@ -581,13 +581,13 @@ function resetAct(act){
 // interval: counts down from "End Act 1", then Act 2 starts by itself
 const intervalEnd = () => st.interval.startedAt + st.interval.mins * 60e3;
 // theatre calls before Act 1, counted back from curtain up
-const CALLS = [['Half', 30], ['Quarter', 15], ['Beginners', 5]];
+const CALLS = [['30 minute call', '30 min', 30], ['15 minute call', '15 min', 15], ['Beginners call', 'Beginners', 5]];
 function callInfo(){
   const r = st.run.a1, now = Date.now();
   if (!r.start || r.startedAt || r.ended === todayKey()) return null;
   const curtain = todayAt(r.start);
   if (now >= curtain || curtain - now > 12 * 3600e3) return null;
-  const calls = CALLS.map(([n, m]) => ({n, at: curtain - m * 60e3}));
+  const calls = CALLS.map(([n, short, m]) => ({n, short, at: curtain - m * 60e3}));
   return {curtain, calls, next: calls.find(c => c.at > now), now};
 }
 function checkAuto(act){
@@ -675,11 +675,11 @@ function renderCalls(){
   el.hidden = !ci; if (!ci) return;
   const left = at => fmtAt(Math.ceil((at - ci.now) / 1000));
   const head = ci.next
-    ? `<span class="cname">${ci.next.n} call</span><span class="cin">in ${left(ci.next.at)}</span>`
+    ? `<span class="cname">${ci.next.n}</span><span class="cin">in ${left(ci.next.at)}</span>`
     : `<span class="cname">Curtain up</span><span class="cin">in ${left(ci.curtain)}</span>`;
   el.innerHTML = `<p class="label" style="margin:0">Calls · curtain up ${fmt(st.run.a1.start)}</p>
     <div class="cnext">${head}</div>
-    <div class="clist">${ci.calls.map(c => `<div class="call ${c.at <= ci.now ? 'past' : ''} ${c === ci.next ? 'on' : ''}"><b>${c.n}</b>${clockOf(c.at)}</div>`).join('')}</div>`;
+    <div class="clist">${ci.calls.map(c => `<div class="call ${c.at <= ci.now ? 'past' : ''} ${c === ci.next ? 'on' : ''}"><b>${c.short}</b>${clockOf(c.at)}</div>`).join('')}</div>`;
 }
 function tickDash(){
   $('#dashNow').textContent = clockOf(Date.now());
@@ -953,7 +953,7 @@ function tickRun(){
     const until = (todayAt(r.start) - now) / 1000, ci = runAct === 'a1' && callInfo();
     $('#clkLabel').textContent = `Curtain up ${fmt(r.start)}`;
     $('#clkBig').textContent = until > 0 ? fmtAt(until) : '0:00';
-    $('#clkSub').textContent = ci && ci.next ? `${ci.next.n} call in ${fmtAt(Math.ceil((ci.next.at - now) / 1000))}`
+    $('#clkSub').textContent = ci && ci.next ? `${ci.next.n} in ${fmtAt(Math.ceil((ci.next.at - now) / 1000))}`
       : until > 0 ? `until ${A.name} starts by itself` : 'Tap Start now when the act begins';
   } else {
     $('#clkLabel').textContent = `${A.name} not started`;
