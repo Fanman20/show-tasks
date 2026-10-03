@@ -70,11 +70,24 @@ textarea.input{resize:vertical;min-height:84px}
 .secbtn[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,var(--surface))}
 .secbtn[aria-pressed="true"] .ct{color:var(--fg)}
 
-.runcard{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.runbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--c);border-radius:var(--r);
-  background:color-mix(in srgb,var(--c) 12%,var(--surface));padding:12px 14px}
-.runbtn .nm{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;line-height:1.05}
-.runbtn small{color:var(--muted);font-size:14px}
+/* dashboard */
+.dashhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.dashhead .for{font-weight:600;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dashhead .now{font-family:var(--display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dashrun{display:flex;flex-direction:column;gap:10px}
+.runbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:1px solid var(--c);border-radius:var(--r);
+  background:color-mix(in srgb,var(--c) 14%,var(--surface));padding:16px 18px;position:relative}
+.runbtn::after{content:"\203A";position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:34px;color:var(--c)}
+.runbtn .nm{font-family:var(--display);font-weight:700;font-size:34px;text-transform:uppercase;line-height:1}
+.runbtn small{color:var(--fg);font-size:16px;font-variant-numeric:tabular-nums;padding-right:28px}
+.runbtn.live{background:color-mix(in srgb,var(--c) 26%,var(--surface))}
+.runbtn.live .nm::after{content:" \25CF";color:var(--danger);font-size:.6em;vertical-align:middle}
+.dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dashgrid .secbtn{min-height:96px}
+.dashgrid .secbtn .ct.alldone{color:var(--post);font-weight:700}
+.chkhead{display:flex;align-items:center;gap:10px}
+.chkrow .tm{font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chkrow{grid-template-columns:30px 1fr auto}
 
 .addpanel{border-color:var(--c)}
 .addhead{display:flex;align-items:center;gap:8px;font-weight:600}
@@ -238,8 +251,26 @@ textarea.input{resize:vertical;min-height:84px}
 </header>
 
 <main>
-  <!-- HOME -->
-  <section class="screen" id="s-home">
+  <!-- DASHBOARD: quick reference during the show -->
+  <section class="screen" id="s-dash" hidden>
+    <div class="dashhead"><span class="for" id="dashFor"></span><span class="now" id="dashNow"></span></div>
+    <div class="dashrun" id="dashRun"></div>
+    <div>
+      <p class="label">Checklists</p>
+      <div class="dashgrid" id="dashChecks"></div>
+    </div>
+    <button class="btn big wide" id="toSetup">Add and arrange tasks &#8250;</button>
+  </section>
+
+  <!-- CHECKLIST: tick off Pre-show, Before Act 1/2, After show -->
+  <section class="screen" id="s-check" hidden>
+    <div class="sechead"><span class="nm" id="chkName"></span><span class="meta" id="chkMeta"></span></div>
+    <ul class="rlist" id="chkList"></ul>
+    <button class="btn" id="untickAll">Untick all</button>
+  </section>
+
+  <!-- SET UP: add tasks -->
+  <section class="screen" id="s-home" hidden>
     <div class="card">
       <div class="field">
         <label for="showName">Show name</label>
@@ -249,11 +280,6 @@ textarea.input{resize:vertical;min-height:84px}
         <label for="forWhom">Tasks are for</label>
         <input class="input" id="forWhom" autocomplete="off" placeholder="e.g. ASM Stage Left">
       </div>
-    </div>
-
-    <div>
-      <p class="label">During the show</p>
-      <div class="runcard" id="runcard"></div>
     </div>
 
     <div>
@@ -505,10 +531,12 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 /* ---------- navigation ---------- */
 function go(name, arg){
   screen = name;
-  ['home','section','run','print'].forEach(s => $('#s-' + s).hidden = s !== name);
-  $('#back').hidden = name === 'home';
+  ['dash','check','home','section','run','print'].forEach(s => $('#s-' + s).hidden = s !== name);
+  $('#back').hidden = name === 'dash';
   wake(name === 'run');
-  if (name === 'home'){ $('#title').textContent = st.show || 'Show Tasks'; renderHome(); }
+  if (name === 'dash'){ curSec = null; $('#title').textContent = st.show || 'Show Tasks'; renderDash(); }
+  if (name === 'check'){ chkSec = arg; $('#title').textContent = st.show || 'Show Tasks'; renderCheck(); }
+  if (name === 'home'){ $('#title').textContent = 'Add and arrange'; renderHome(); }
   if (name === 'section'){ curSec = arg; timing = false; $('#title').textContent = st.show || 'Show Tasks'; renderSection(); }
   if (name === 'run'){ runAct = arg || runAct; $('#title').textContent = 'Running'; renderRun(); }
   if (name === 'print'){
@@ -518,22 +546,80 @@ function go(name, arg){
   }
   window.scrollTo(0, 0);
 }
-$('#back').onclick = () => (screen === 'print' || screen === 'run') && curSec ? go('section', curSec) : go('home');
+$('#back').onclick = () => {
+  if ((screen === 'print' || screen === 'run') && curSec) go('section', curSec);
+  else if (screen === 'section' || screen === 'print') go('home');
+  else go('dash');
+};
+
+/* ---------- dashboard ---------- */
+const CHECKS = ['pre', 'b1', 'b2', 'post'];
+let chkSec = 'pre';
+// ticks for Before Act 1/2 are shared with the Running page; Pre-show and After show keep their own
+function doneMap(sec){
+  const s = secOf(sec);
+  if (s.act) return st.run[s.act].done;
+  st.ticks = st.ticks || {};
+  return st.ticks[sec] = st.ticks[sec] || {};
+}
+const doneCount = sec => { const d = doneMap(sec); return st.tasks[sec].filter(t => d[t.id]).length; };
+
+function renderDash(){
+  $('#dashFor').textContent = st.forWhom || '';
+  $('#dashRun').innerHTML = Object.entries(ACTS).map(([id, a]) => `
+    <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small></small></button>`).join('');
+  $('#dashChecks').innerHTML = CHECKS.map(id => {
+    const s = secOf(id), n = st.tasks[id].length, d = doneCount(id);
+    return `<button class="secbtn ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-chk="${id}">
+      ${s.tag ? `<span class="tag">${s.tag}</span>` : ''}<span class="nm">${s.nm}</span>
+      <span class="ct ${n && d === n ? 'alldone' : ''}">${!n ? 'No tasks' : d === n ? `All ${n} done` : `${d} of ${n} done`}</span></button>`;
+  }).join('');
+  tickDash();
+}
+function tickDash(){
+  $('#dashNow').textContent = clockOf(Date.now());
+  document.querySelectorAll('#dashRun [data-run]').forEach(b => {
+    const act = b.dataset.run, r = st.run[act];
+    let txt = r.start ? `Starts ${fmt(r.start)}` : 'Start by hand';
+    if (r.startedAt){
+      const el = elapsed(act);
+      const next = st.tasks[ACTS[act].run].filter(t => !r.done[t.id] && t.at != null && t.at > el).sort((x, y) => x.at - y.at)[0];
+      txt = `${fmtAt(el)} into the act · ${next ? `next cue in ${fmtAt(Math.ceil(next.at - el))}` : 'no more cues'}`;
+    }
+    b.classList.toggle('live', !!r.startedAt);
+    b.querySelector('small').textContent = txt;
+  });
+}
+$('#dashRun').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
+$('#dashChecks').onclick = e => { const b = e.target.closest('[data-chk]'); if (b) go('check', b.dataset.chk); };
+$('#toSetup').onclick = () => go('home');
+
+function renderCheck(){
+  const s = secOf(chkSec), list = st.tasks[chkSec], d = doneMap(chkSec);
+  $('#s-check').style.setProperty('--c', s.c);
+  $('#chkName').textContent = s.name;
+  $('#chkMeta').textContent = list.length ? `${doneCount(chkSec)} of ${list.length} done` : '';
+  $('#untickAll').hidden = !list.length;
+  $('#chkList').innerHTML = list.length ? list.map(t => `
+    <li class="rrow brow chkrow ${d[t.id] ? 'done' : ''}" data-id="${t.id}"><span class="box">${d[t.id] ? '&#10003;' : ''}</span><span class="tx">${esc(t.text)}</span><span class="tm">${fmt(t.time)}</span></li>`).join('')
+    : `<li class="empty">No tasks in ${s.name} yet. Add them from Add and arrange tasks.</li>`;
+}
+$('#chkList').onclick = e => {
+  const li = e.target.closest('[data-id]'); if (!li) return;
+  const d = doneMap(chkSec); d[li.dataset.id] = !d[li.dataset.id]; save(); renderCheck();
+};
+$('#untickAll').onclick = e => arm(e.target, 'Tap again to untick all', () => {
+  e.target.classList.remove('armed'); e.target.textContent = 'Untick all';
+  const d = doneMap(chkSec); st.tasks[chkSec].forEach(t => delete d[t.id]); save(); renderCheck();
+});
 
 /* ---------- home ---------- */
 $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
-$('#showName').oninput = e => { st.show = e.target.value; $('#title').textContent = st.show || 'Show Tasks'; save(); };
+$('#showName').oninput = e => { st.show = e.target.value; save(); };
 $('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
 
-function actStatus(act){
-  const r = st.run[act];
-  if (r.startedAt) return `Running · ${fmtAt(elapsed(act))}`;
-  return r.start ? `Starts ${fmt(r.start)}` : 'Start by hand';
-}
 function renderHome(){
   curSec = null;
-  $('#runcard').innerHTML = Object.entries(ACTS).map(([id, a]) => `
-    <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small>${actStatus(id)}</small></button>`).join('');
   $('#secgrid').innerHTML = SECS.map(s => `
     <button class="secbtn ${s.full ? 'full' : ''} ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-sec="${s.id}" aria-pressed="${addSec === s.id}">
       ${s.tag ? `<span class="tag">${s.tag}</span>` : ''}<span class="nm">${s.nm}</span><span class="ct">${plural(st.tasks[s.id].length)}</span>
@@ -542,7 +628,6 @@ function renderHome(){
     <button class="arrbtn ${s.full ? 'full' : ''}" data-open="${s.id}"><i class="dot" style="--c:${s.c}"></i><span>${s.name}</span><small>${st.tasks[s.id].length} &#8250;</small></button>`).join('');
   renderAdd();
 }
-$('#runcard').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
 $('#secgrid').onclick = e => {
   const b = e.target.closest('[data-sec]'); if (!b) return;
   addSec = b.dataset.sec; renderHome();
@@ -909,7 +994,7 @@ $('#shareBtn').onclick = () => openSheet(`
 $('#newShow').onclick = e => arm(e.target, 'Tap again to clear every task', () => {
   e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
   SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = null;
-  resetAct('a1'); resetAct('a2');
+  resetAct('a1'); resetAct('a2'); st.ticks = {};
   $('#showName').value = ''; $('#forWhom').value = '';
   save(); go('home'); toast('Cleared. Enter the new show name.');
 });
@@ -970,6 +1055,7 @@ $('#doPrint').onclick = () => { try { window.print(); } catch(e) { toast('Printi
 setInterval(() => {
   const changed = checkAuto('a1') | checkAuto('a2');
   if (screen === 'run'){ changed ? renderRun() : tickRun(); }
+  if (screen === 'dash') tickDash();
 }, 500);
 
 // the pinned Running box sits just under the title bar
@@ -977,7 +1063,7 @@ const setBarH = () => document.documentElement.style.setProperty('--barh', $('.b
 setBarH(); addEventListener('resize', setBarH);
 
 checkAuto('a1'); checkAuto('a2');
-go('home');
+go('dash');
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
 </script>
