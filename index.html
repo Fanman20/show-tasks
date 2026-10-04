@@ -63,7 +63,29 @@ body.locked #s-run .rlist,body.locked #s-run .clkbtns,body.locked #s-run .acttab
 body.locked .bar .back,body.locked .bar .redbtn,body.locked #endAct1{pointer-events:none}
 body.locked #s-run .clkbtns,body.locked #s-run .acttab,body.locked .bar .back{opacity:.35}
 
-main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+main{max-width:640px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+body.notabs main{padding-bottom:48px}
+
+/* bottom tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;
+  background:color-mix(in srgb,var(--bg) 92%,#000);border-top:1px solid var(--line);padding:0 4px env(safe-area-inset-bottom,0px)}
+.tabbar button{flex:1;max-width:128px;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);
+  font-size:11px;font-weight:600;padding:8px 0 6px;min-height:52px}
+.tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-current="page"]{color:var(--accent)}
+body.notabs .tabbar{display:none}
+
+/* Order tab: section picker */
+.secchips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px;scrollbar-width:none}
+.secchips::-webkit-scrollbar{display:none}
+.secchips .chip{flex:none;white-space:nowrap}
+.secchips .chip small{color:var(--muted);font-weight:700}
+
+/* on/off switch */
+.sw{width:50px;height:30px;border-radius:999px;background:var(--line);position:relative;border:0;flex:none;padding:0}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:var(--fg);transition:left .15s}
+.sw[aria-checked="true"]{background:var(--accent)}
+.sw[aria-checked="true"]::after{left:23px;background:var(--on-accent)}
 .screen{display:flex;flex-direction:column;gap:22px}
 .label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 
@@ -118,6 +140,10 @@ textarea.input{resize:vertical;min-height:84px}
 .crow .cv{flex:1;font-family:var(--display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
 .crow .cv.off{font-family:var(--body);font-weight:500;font-size:16px;color:var(--muted)}
 .crow .btn{padding:8px 14px;font-size:15px}
+.crow .k{flex:1;font-weight:600;min-width:0}
+#s-add .secbtn{min-height:58px;padding:8px 10px 8px 18px}
+#s-add .secbtn .nm{font-size:21px}
+#s-add .secbtn .ct{font-size:13px}
 .dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dashgrid .secbtn{min-height:96px}
 .dashgrid .secbtn .ct.alldone{color:var(--post);font-weight:700}
@@ -199,11 +225,14 @@ textarea.input{resize:vertical;min-height:84px}
 .next.soon .nin{color:var(--on-accent);background:var(--accent);border-radius:6px;padding:0 8px}
 .clkbtns{display:flex;flex-wrap:wrap;gap:8px}
 .clkbtns .btn.full{flex-basis:100%}
+/* held: the act clock is frozen */
+.clock.held{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,var(--surface))}
+.clock.held .clk-label{color:var(--danger)}
 .clkbtns .btn{flex:1;padding:12px 10px;font-size:16px}
 .clkbtns .btn.big{padding:12px 10px;font-size:17px}
 
 .rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.rrow{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.rrow{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rrow .at{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);font-size:15px}
 .rrow .tx{font-size:18px;line-height:1.3;overflow-wrap:anywhere;min-width:0}
 .rrow .st{font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
@@ -261,7 +290,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 .btnrow .btn{flex:1;min-width:110px}
 .bigtime{font-family:var(--display);font-size:56px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
 
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:calc(100% - 32px);
+.toast{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:calc(100% - 32px);
   background:var(--fg);color:var(--bg);border-radius:10px;padding:10px 16px;font-weight:600;box-shadow:0 6px 20px #0008;text-align:center}
 
 @media (prefers-reduced-motion:no-preference){
@@ -273,7 +302,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 @media print{
   @page{size:A4 landscape;margin:0}
   html,body{background:#fff;padding:0}
-  .bar,.noprint,.toast,.scrim{display:none!important}
+  .bar,.noprint,.toast,.scrim,.tabbar{display:none!important}
   main{padding:0;max-width:none}
   #s-print > :not(#preview){display:none!important}
   #preview{gap:0}
@@ -291,20 +320,15 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 </header>
 
 <main>
-  <!-- DASHBOARD: quick reference during the show -->
+  <!-- HOME (dashboard): quick reference during the show -->
   <section class="screen" id="s-dash" hidden>
     <div class="dashhead"><span class="for" id="dashFor"></span><span class="now" id="dashNow"></span></div>
     <div class="dashrun" id="dashRun"></div>
     <div class="card calls" id="dashCalls" hidden></div>
     <div>
-      <p class="label">Curtain up and interval</p>
-      <div class="card curtain" id="dashStart"></div>
-    </div>
-    <div>
       <p class="label">Checklists</p>
       <div class="dashgrid" id="dashChecks"></div>
     </div>
-    <button class="btn big wide" id="toSetup">Add and arrange tasks &#8250;</button>
   </section>
 
   <!-- CHECKLIST: tick off Pre-show, Before Act 1/2, After show -->
@@ -314,78 +338,42 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
     <button class="btn" id="untickAll">Untick all</button>
   </section>
 
-  <!-- SET UP: add tasks -->
-  <section class="screen" id="s-home" hidden>
-    <div class="card">
-      <div class="field">
-        <label for="showName">Show name</label>
-        <input class="input" id="showName" autocomplete="off" placeholder="e.g. The Pirates of Penzance">
-      </div>
-      <div class="field">
-        <label for="forWhom">Tasks are for</label>
-        <input class="input" id="forWhom" autocomplete="off" placeholder="e.g. ASM Stage Left">
-      </div>
-    </div>
-
+  <!-- ADD tab -->
+  <section class="screen" id="s-add" hidden>
     <div>
-      <p class="label">1 · Pick where the task goes</p>
+      <p class="label">1 · Where does it go?</p>
       <div class="secgrid" id="secgrid"></div>
     </div>
-
-    <div class="card addpanel" id="addpanel" hidden>
-      <div class="addhead"><span class="dot"></span><span id="addTo"></span></div>
+    <div class="card addpanel" id="addpanel">
       <div class="field">
         <label for="taskText">2 · Say or type the task</label>
         <textarea class="input" id="taskText" enterkeyhint="done" placeholder="Tap the microphone on your keyboard and speak"></textarea>
       </div>
-      <div class="row2">
-        <div class="field" id="clockField">
-          <label for="taskTime">Time (optional)</label>
-          <input class="input" type="time" id="taskTime">
-        </div>
-        <div class="field" id="atField">
-          <span class="flabel">Time into the act (optional)</span>
-          <div class="minsec">
-            <input class="input" type="number" inputmode="numeric" min="0" id="atMin" placeholder="0" aria-label="Minutes"><span>min</span>
-            <input class="input" type="number" inputmode="numeric" min="0" max="59" id="atSec" placeholder="00" aria-label="Seconds"><span>sec</span>
-          </div>
-        </div>
-        <button class="btn primary big" id="addBtn">Add task</button>
+      <div class="field" id="clockField">
+        <label for="taskTime">Time (optional)</label>
+        <input class="input" type="time" id="taskTime">
       </div>
-      <p class="label" id="recentLabel" style="margin:4px 0 0">Last added here</p>
+      <div class="field" id="atField">
+        <span class="flabel" id="atLabel">Time into the act (optional)</span>
+        <div class="minsec">
+          <input class="input" type="number" inputmode="numeric" min="0" id="atMin" placeholder="0" aria-label="Minutes"><span>min</span>
+          <input class="input" type="number" inputmode="numeric" min="0" max="59" id="atSec" placeholder="00" aria-label="Seconds"><span>sec</span>
+        </div>
+      </div>
+      <button class="btn primary big wide" id="addBtn">Add task</button>
+    </div>
+    <div>
+      <p class="label" id="recentLabel">Just added</p>
       <ul class="recent" id="recent"></ul>
     </div>
-
-    <div>
-      <p class="label">3 · Put in order, set times, print</p>
-      <div class="arrange" id="arrange"></div>
-    </div>
-
-    <div class="card">
-      <p class="label" style="margin:0">Backup and share your list</p>
-      <div class="btnrow">
-        <button class="btn" id="copyText">Copy as text</button>
-        <button class="btn" id="saveBackup">Save backup file</button>
-      </div>
-      <button class="btn" id="loadBackup">Load a backup file</button>
-      <input type="file" id="backupFile" accept=".json,application/json" hidden>
-      <p class="hint">A backup keeps your list safe if the phone is lost or replaced. Send the file to a colleague and they can load your tasks into their own copy of the app.</p>
-    </div>
-
-    <div class="foot">
-      <button class="btn" id="printAll">Print all sections</button>
-      <button class="btn" id="shareBtn">Give this app to someone</button>
-    </div>
-    <button class="btn danger" id="newShow">Start a new show (clear all tasks)</button>
   </section>
 
-  <!-- SECTION -->
+  <!-- ORDER tab -->
   <section class="screen" id="s-section" hidden>
-    <div class="sechead" id="sechead"><span class="nm" id="secName"></span><span class="meta" id="secMeta"></span></div>
+    <div class="secchips" id="orderChips"></div>
     <div class="tools">
       <button class="btn" id="timingBtn" aria-pressed="false">Timing run</button>
       <button class="btn" id="sortBtn">Sort by time</button>
-      <button class="btn primary" id="printSec">Print</button>
     </div>
     <p class="hint" id="secHint"></p>
     <ul class="list" id="list"></ul>
@@ -393,6 +381,49 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       <input class="input" id="inlineText" enterkeyhint="done" placeholder="Add another task…" autocomplete="off">
       <button class="btn primary" id="inlineAdd">Add</button>
     </div>
+  </section>
+
+  <!-- SETTINGS tab -->
+  <section class="screen" id="s-settings" hidden>
+    <div>
+      <p class="label">Show</p>
+      <div class="card">
+        <div class="field">
+          <label for="showName">Show name</label>
+          <input class="input" id="showName" autocomplete="off" placeholder="e.g. The Pirates of Penzance">
+        </div>
+        <div class="field">
+          <label for="forWhom">Tasks are for</label>
+          <input class="input" id="forWhom" autocomplete="off" placeholder="e.g. ASM Stage Left">
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="label">Times</p>
+      <div class="card curtain" id="setTimes"></div>
+    </div>
+    <div>
+      <p class="label">Display</p>
+      <div class="card curtain">
+        <div class="crow"><span class="k">Red wings mode</span><button class="sw" id="redSw" role="switch" aria-checked="false" aria-label="Red wings mode"></button></div>
+      </div>
+    </div>
+    <div>
+      <p class="label">Backup and share</p>
+      <div class="card curtain">
+        <div class="crow"><span class="k">Copy list as text</span><button class="btn" id="copyText">Copy</button></div>
+        <div class="crow"><span class="k">Save a backup file</span><button class="btn" id="saveBackup">Save</button></div>
+        <div class="crow"><span class="k">Load a backup file</span><button class="btn" id="loadBackup">Load</button></div>
+        <div class="crow"><span class="k">Give this app to someone</span><button class="btn" id="shareBtn">Link</button></div>
+      </div>
+      <input type="file" id="backupFile" accept=".json,application/json" hidden>
+      <p class="hint" style="margin-top:8px">A backup keeps your list safe if the phone is lost or replaced. Send the file to a colleague and they can load your tasks into their own copy of the app.</p>
+    </div>
+    <div>
+      <p class="label">New show</p>
+      <button class="btn danger wide" id="newShow">Start a new show (clear all tasks)</button>
+    </div>
+    <p class="hint" style="text-align:center">Show Tasks · Version 2</p>
   </section>
 
   <!-- RUNNING -->
@@ -434,6 +465,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       <ul class="rlist" id="runList"></ul>
     </div>
     <button class="btn wide" id="endAct1" hidden></button>
+    <p class="hint" id="syncHint">Running early or late? When a cue happens, press and hold it to set the clock to that cue.</p>
     <label class="toggle rec">Rehearsal: tap a task to record its time <input type="checkbox" id="recMode"></label>
     <div id="runSpacer" aria-hidden="true"></div>
   </section>
@@ -456,6 +488,14 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
     <div id="preview"></div>
   </section>
 </main>
+
+<nav class="tabbar" id="tabbar" aria-label="Sections of the app">
+  <button data-tab="dash"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Home</button>
+  <button data-tab="add"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>Add</button>
+  <button data-tab="order"><svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h10M4 18h10M18 5v14M15 16l3 3 3-3"></path></svg>Order</button>
+  <button data-tab="print"><svg viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"></path></svg>Print</button>
+  <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>Settings</button>
+</nav>
 
 <div id="sheetHost"></div>
 
@@ -530,12 +570,14 @@ save();
 function applyRed(){
   document.documentElement.classList.toggle('red', !!st.red);
   $('#redBtn').setAttribute('aria-pressed', !!st.red);
+  $('#redSw').setAttribute('aria-checked', !!st.red);
   $('meta[name="theme-color"]').content = st.red ? '#000000' : '#10131a';
 }
-$('#redBtn').onclick = () => { st.red = !st.red; save(); applyRed(); };
+$('#redBtn').onclick = $('#redSw').onclick = () => { st.red = !st.red; save(); applyRed(); };
 applyRed();
 
-let addSec = null, curSec = null, timing = false, screen = 'home', runAct = 'a1';
+// addSec: section the Add tab adds to; curSec: section shown on the Order tab; runFrom: where Back goes from Running
+let addSec = 'pre', curSec = 'pre', timing = false, screen = 'dash', runAct = 'a1', runFrom = 'dash';
 
 function fmt(t){
   if (!t) return '';
@@ -573,21 +615,24 @@ function arm(btn, armedText, fn){
 }
 
 /* ---------- act timers ---------- */
-const elapsed = act => (Date.now() - st.run[act].startedAt) / 1000;
+// while held, the act clock stands still at the moment Hold was pressed
+const elapsed = act => { const r = st.run[act]; return ((r.pausedAt || Date.now()) - r.startedAt) / 1000; };
 function resetAct(act){
   const r = st.run[act];
-  r.startedAt = null; r.done = {}; r.autoDay = todayKey(); save();
+  r.startedAt = null; r.pausedAt = null; r.done = {}; r.autoDay = todayKey(); save();
 }
 // interval: counts down from "End Act 1", then Act 2 starts by itself
 const intervalEnd = () => st.interval.startedAt + st.interval.mins * 60e3;
 // theatre calls before Act 1, counted back from curtain up
-const CALLS = [['30 minute call', '30 min', 30], ['15 minute call', '15 min', 15], ['Beginners call', 'Beginners', 5]];
+st.calls = st.calls || [30, 15, 5];   // minutes before curtain up: first call, second call, beginners
+const callList = () => [[`${st.calls[0]} minute call`, `${st.calls[0]} min`, st.calls[0]],
+  [`${st.calls[1]} minute call`, `${st.calls[1]} min`, st.calls[1]], ['Beginners call', 'Beginners', st.calls[2]]];
 function callInfo(){
   const r = st.run.a1, now = Date.now();
   if (!r.start || r.startedAt || r.ended === todayKey()) return null;
   const curtain = todayAt(r.start);
   if (now >= curtain || curtain - now > 12 * 3600e3) return null;
-  const calls = CALLS.map(([n, short, m]) => ({n, short, at: curtain - m * 60e3}));
+  const calls = callList().map(([n, short, m]) => ({n, short, at: curtain - m * 60e3}));
   return {curtain, calls, next: calls.find(c => c.at > now), now};
 }
 function checkAuto(act){
@@ -616,29 +661,33 @@ async function wake(on){
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && screen === 'run') wake(true); });
 
 /* ---------- navigation ---------- */
-function go(name, arg){
+// screens: dash (Home tab), add, order, print, settings are tabs; check and run open from Home
+const SCREEN_EL = {dash:'dash', check:'check', add:'add', order:'section', print:'print', settings:'settings', run:'run'};
+const TAB_OF = {dash:'dash', check:'dash', add:'add', order:'order', print:'print', settings:'settings'};
+function go(name, arg, from){
   screen = name;
-  ['dash','check','home','section','run','print'].forEach(s => $('#s-' + s).hidden = s !== name);
-  $('#back').hidden = name === 'dash';
+  Object.entries(SCREEN_EL).forEach(([k, id]) => $('#s-' + id).hidden = k !== name);
+  document.body.classList.toggle('notabs', name === 'run');
+  document.querySelectorAll('#tabbar [data-tab]').forEach(b =>
+    b.dataset.tab === TAB_OF[name] ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  $('#back').hidden = !(name === 'run' || name === 'check');
+  $('#back').innerHTML = '&#8249; Home';
   wake(name === 'run');
   if (name !== 'run') setLock(false);
-  if (name === 'dash'){ curSec = null; $('#title').textContent = st.show || 'Show Tasks'; renderDash(); }
-  if (name === 'check'){ chkSec = arg; $('#title').textContent = st.show || 'Show Tasks'; renderCheck(); }
-  if (name === 'home'){ $('#title').textContent = 'Add and arrange'; renderHome(); }
-  if (name === 'section'){ curSec = arg; timing = false; $('#title').textContent = st.show || 'Show Tasks'; renderSection(); }
-  if (name === 'run'){ runAct = arg || runAct; $('#title').textContent = 'Running'; renderRun(); }
-  if (name === 'print'){
-    if (arg) st.printSecs = [arg];
-    $('#title').textContent = 'Print';
-    renderPrint();
-  }
+  const title = {dash: st.show || 'Show Tasks', check: st.show || 'Show Tasks', add: 'Add a task', order: 'Put in order',
+    print: 'Print', settings: 'Settings', run: 'Running'};
+  $('#title').textContent = title[name];
+  if (name === 'dash') renderDash();
+  if (name === 'check'){ chkSec = arg; renderCheck(); }
+  if (name === 'add') renderAddTab();
+  if (name === 'order'){ timing = false; renderSection(); }
+  if (name === 'settings') renderSettings();
+  if (name === 'run'){ runAct = arg || runAct; runFrom = from || 'dash'; $('#back').innerHTML = runFrom === 'order' ? '&#8249; Order' : '&#8249; Home'; renderRun(); }
+  if (name === 'print') renderPrint();
   if (name !== 'run') window.scrollTo(0, 0);   // Running sets its own scroll position
 }
-$('#back').onclick = () => {
-  if ((screen === 'print' || screen === 'run') && curSec) go('section', curSec);
-  else if (screen === 'section' || screen === 'print') go('home');
-  else go('dash');
-};
+$('#back').onclick = () => go(screen === 'run' && runFrom === 'order' ? 'order' : 'dash');
+$('#tabbar').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) go(b.dataset.tab); };
 
 /* ---------- dashboard ---------- */
 const CHECKS = ['pre', 'b1', 'b2', 'post'];
@@ -656,12 +705,6 @@ function renderDash(){
   $('#dashFor').textContent = st.forWhom || '';
   $('#dashRun').innerHTML = Object.entries(ACTS).map(([id, a]) => `
     <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small></small></button>`).join('');
-  $('#dashStart').innerHTML = Object.entries(ACTS).map(([id, a]) => { const r = st.run[id]; return `
-    <div class="crow"><i class="dot" style="--c:${a.c}"></i><span class="cn">${a.name}</span>
-      <span class="cv ${r.start ? '' : 'off'}">${r.start ? fmt(r.start) : 'Start by hand'}</span>
-      <button class="btn" data-start="${id}">${r.start ? 'Change' : 'Set time'}</button></div>`; }).join('') + `
-    <div class="crow"><i class="dot" style="--c:var(--muted)"></i><span class="cn">Interval</span>
-      <span class="cv">${st.interval.mins} min</span><button class="btn" data-int>Change</button></div>`;
   $('#dashChecks').innerHTML = CHECKS.map(id => {
     const s = secOf(id), n = st.tasks[id].length, d = doneCount(id);
     return `<button class="secbtn ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-chk="${id}">
@@ -692,7 +735,8 @@ function tickDash(){
     if (r.startedAt){
       const el = elapsed(act);
       const next = st.tasks[ACTS[act].run].filter(t => !r.done[t.id] && t.at != null && t.at > el).sort((x, y) => x.at - y.at)[0];
-      txt = `${fmtAt(el)} into the act · ${next ? `next cue in ${fmtAt(Math.ceil(next.at - el))}` : 'no more cues'}`;
+      txt = r.pausedAt ? `HELD at ${fmtAt(el)} · tap to open`
+        : `${fmtAt(el)} into the act · ${next ? `next cue in ${fmtAt(Math.ceil(next.at - el))}` : 'no more cues'}`;
     }
     b.classList.toggle('live', !!r.startedAt);
     b.querySelector('small').textContent = txt;
@@ -700,11 +744,38 @@ function tickDash(){
 }
 $('#dashRun').onclick = e => { const b = e.target.closest('[data-run]'); if (b) go('run', b.dataset.run); };
 $('#dashChecks').onclick = e => { const b = e.target.closest('[data-chk]'); if (b) go('check', b.dataset.chk); };
-$('#toSetup').onclick = () => go('home');
-$('#dashStart').onclick = e => {
+
+/* ---------- settings tab ---------- */
+function renderSettings(){
+  $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
+  const row = (k, v, off, btn, data) => `<div class="crow"><span class="k">${k}</span><span class="cv ${off ? 'off' : ''}" style="flex:none">${v}</span><button class="btn" ${data}>${btn}</button></div>`;
+  $('#setTimes').innerHTML =
+    Object.entries(ACTS).map(([id, a]) => { const r = st.run[id];
+      return row(`${a.name} curtain up`, r.start ? fmt(r.start) : 'By hand', !r.start, r.start ? 'Change' : 'Set', `data-start="${id}"`); }).join('') +
+    row('Interval', `${st.interval.mins} min`, false, 'Change', 'data-int') +
+    row('Calls', `${st.calls[0]} · ${st.calls[1]} · ${st.calls[2]} min`, true, 'Change', 'data-calls');
+}
+$('#showName').oninput = e => { st.show = e.target.value; save(); };
+$('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
+$('#setTimes').onclick = e => {
   const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start);
   if (e.target.closest('[data-int]')) intervalSheet();
+  if (e.target.closest('[data-calls]')) callsSheet();
 };
+function callsSheet(){
+  const inp = (id, v, label) => `<div class="crow"><label class="k" for="${id}">${label}</label><div class="minsec"><input class="input" type="number" inputmode="numeric" min="1" id="${id}" value="${v}"><span>min before</span></div></div>`;
+  openSheet(`
+    <h3>Calls</h3>
+    <p>How many minutes before Act 1 curtain up each call is given. They count down on the Home tab.</p>
+    <div class="card curtain">${inp('c1', st.calls[0], 'First call')}${inp('c2', st.calls[1], 'Second call')}${inp('c3', st.calls[2], 'Beginners')}</div>
+    <button class="btn primary big wide" id="cSave">Save</button>`,
+  (el, close) => {
+    el.querySelector('#cSave').onclick = () => {
+      st.calls = ['#c1', '#c2', '#c3'].map((s, i) => Math.max(1, parseInt(el.querySelector(s).value) || [30, 15, 5][i]));
+      save(); close(); renderSettings();
+    };
+  });
+}
 function intervalSheet(){
   openSheet(`
     <h3>Interval length</h3>
@@ -716,7 +787,7 @@ function intervalSheet(){
     el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => el.querySelector('#intIn').value = b.dataset.m);
     el.querySelector('#intSave').onclick = () => {
       st.interval.mins = Math.max(1, parseInt(el.querySelector('#intIn').value) || 20);
-      save(); close(); screen === 'run' ? renderRun() : renderDash();
+      save(); close(); screen === 'run' ? renderRun() : renderSettings();
     };
   });
 }
@@ -729,7 +800,7 @@ function renderCheck(){
   $('#untickAll').hidden = !list.length;
   $('#chkList').innerHTML = list.length ? list.map(t => `
     <li class="rrow brow chkrow ${d[t.id] ? 'done' : ''}" data-id="${t.id}"><span class="box">${d[t.id] ? '&#10003;' : ''}</span><span class="tx">${esc(t.text)}</span><span class="tm">${fmt(t.time)}</span></li>`).join('')
-    : `<li class="empty">No tasks in ${s.name} yet. Add them from Add and arrange tasks.</li>`;
+    : `<li class="empty">No tasks in ${s.name} yet. Add them on the Add tab.</li>`;
 }
 $('#chkList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
@@ -740,40 +811,28 @@ $('#untickAll').onclick = e => arm(e.target, 'Tap again to untick all', () => {
   const d = doneMap(chkSec); st.tasks[chkSec].forEach(t => delete d[t.id]); save(); renderCheck();
 });
 
-/* ---------- home ---------- */
-$('#showName').value = st.show; $('#forWhom').value = st.forWhom;
-$('#showName').oninput = e => { st.show = e.target.value; save(); };
-$('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
-
-function renderHome(){
-  curSec = null;
+/* ---------- add tab ---------- */
+function renderAddTab(){
   $('#secgrid').innerHTML = SECS.map(s => `
     <button class="secbtn ${s.full ? 'full' : ''} ${s.tag === 'Before' ? 'before' : ''}" style="--c:${s.c}" data-sec="${s.id}" aria-pressed="${addSec === s.id}">
       ${s.tag ? `<span class="tag">${s.tag}</span>` : ''}<span class="nm">${s.nm}</span><span class="ct">${plural(st.tasks[s.id].length)}</span>
     </button>`).join('');
-  $('#arrange').innerHTML = SECS.map(s => `
-    <button class="arrbtn ${s.full ? 'full' : ''}" data-open="${s.id}"><i class="dot" style="--c:${s.c}"></i><span>${s.name}</span><small>${st.tasks[s.id].length} &#8250;</small></button>`).join('');
-  renderAdd();
+  const s = secOf(addSec);
+  $('#addpanel').style.setProperty('--c', s.c);
+  $('#clockField').hidden = s.kind === 'run';
+  $('#atField').hidden = s.kind !== 'run';
+  if (s.act) $('#atLabel').textContent = `Time into ${ACTS[s.act].name} (optional)`;
+  $('#addBtn').textContent = `Add to ${s.name}`;   // says where it's going, so it can't land in the wrong list
+  const last = st.tasks[addSec].slice(-3).reverse();
+  $('#recentLabel').textContent = `Just added to ${s.name}`;
+  $('#recentLabel').parentElement.hidden = !last.length;
+  $('#recent').innerHTML = last.map(t => { const tl = timeLabel(t, addSec); return `<li style="--c:${s.c}">${esc(t.text)}${tl ? ' · ' + tl : ''}</li>`; }).join('');
 }
 $('#secgrid').onclick = e => {
   const b = e.target.closest('[data-sec]'); if (!b) return;
-  addSec = b.dataset.sec; renderHome();
+  addSec = b.dataset.sec; renderAddTab();
   $('#taskText').focus();
 };
-$('#arrange').onclick = e => { const b = e.target.closest('[data-open]'); if (b) go('section', b.dataset.open); };
-
-function renderAdd(){
-  const p = $('#addpanel');
-  if (!addSec){ p.hidden = true; return; }
-  const s = secOf(addSec);
-  p.hidden = false; p.style.setProperty('--c', s.c);
-  $('#addTo').textContent = 'Adding to ' + s.name;
-  $('#clockField').hidden = s.kind === 'run';
-  $('#atField').hidden = s.kind !== 'run';
-  const last = st.tasks[addSec].slice(-3).reverse();
-  $('#recentLabel').hidden = !last.length;
-  $('#recent').innerHTML = last.map(t => { const tl = timeLabel(t, addSec); return `<li style="--c:${s.c}">${esc(t.text)}${tl ? ' · ' + tl : ''}</li>`; }).join('');
-}
 function addTask(sec, text, time='', at=null){
   text = text.trim(); if (!text) return false;
   st.tasks[sec].push({id:uid(), text, time, at}); save(); return true;
@@ -787,17 +846,15 @@ $('#addBtn').onclick = () => {
   const ok = addTask(addSec, $('#taskText').value, run ? '' : $('#taskTime').value, run ? readMinSec($('#atMin'), $('#atSec')) : null);
   if (!ok){ toast('Say or type a task first'); return; }
   $('#taskText').value = ''; $('#taskTime').value = ''; $('#atMin').value = ''; $('#atSec').value = '';
-  toast('Added to ' + secOf(addSec).name); renderHome(); $('#taskText').focus();
+  toast('Added to ' + secOf(addSec).name); renderAddTab(); $('#taskText').focus();
 };
 $('#taskText').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#addBtn').click(); } };
-$('#printAll').onclick = () => { st.printSecs = SECS.map(s => s.id); go('print'); };
 
 /* ---------- section ---------- */
 function renderSection(){
   const s = secOf(curSec), list = st.tasks[curSec], run = s.kind === 'run';
   $('#s-section').style.setProperty('--c', s.c);
-  $('#secName').textContent = s.name;
-  $('#secMeta').innerHTML = `${plural(list.length)}<br>${esc(st.forWhom || '')}`;
+  $('#orderChips').innerHTML = SECS.map(x => `<button class="chip" style="--c:${x.c}" data-o="${x.id}" aria-pressed="${x.id === curSec}"><i class="dot"></i>${x.name} <small>${st.tasks[x.id].length}</small></button>`).join('');
   $('#timingBtn').textContent = run ? 'Record times' : 'Timing run';
   $('#timingBtn').setAttribute('aria-pressed', timing);
   $('#secHint').textContent = timing
@@ -868,7 +925,7 @@ $('#list').addEventListener('pointerdown', e => {
 });
 
 $('#timingBtn').onclick = () => {
-  if (isRun(curSec)){ $('#recMode').checked = true; go('run', secOf(curSec).act); return; }
+  if (isRun(curSec)){ $('#recMode').checked = true; go('run', secOf(curSec).act, 'order'); return; }
   timing = !timing; renderSection();
 };
 $('#sortBtn').onclick = () => {
@@ -879,7 +936,7 @@ $('#sortBtn').onclick = () => {
   st.tasks[curSec] = list.map(t => has(t) ? timed[k++] : t);
   save(); renderSection(); toast('Timed tasks put in time order');
 };
-$('#printSec').onclick = () => go('print', curSec);
+$('#orderChips').onclick = e => { const b = e.target.closest('[data-o]'); if (b){ curSec = b.dataset.o; timing = false; renderSection(); } };
 $('#inlineAdd').onclick = () => {
   if (addTask(curSec, $('#inlineText').value)){ $('#inlineText').value = ''; renderSection(); }
 };
@@ -894,8 +951,10 @@ function renderRun(){
   $('#s-run').style.setProperty('--c', A.c);
   document.querySelectorAll('.acttab').forEach(b => b.setAttribute('aria-pressed', b.dataset.act === runAct));
   const inInterval = runAct === 'a2' && !started && st.interval.startedAt;
+  $('.clock').classList.toggle('held', !!r.pausedAt);
+  $('#syncHint').hidden = !started;
   $('#clkBtns').innerHTML = started
-    ? `<button class="btn" id="cRestart">Restart from now</button><button class="btn danger" id="cReset">Stop and reset</button>`
+    ? `<button class="btn ${r.pausedAt ? 'primary' : ''}" id="cHold">${r.pausedAt ? 'Resume' : 'Hold'}</button><button class="btn" id="cRestart">Restart</button><button class="btn danger" id="cReset">Stop</button>`
     : inInterval
       ? `<button class="btn primary big" id="cStart">Start Act 2 now</button><button class="btn" id="cCancelInt">Cancel interval</button>`
       : `<button class="btn primary big" id="cStart">Start now</button><button class="btn" id="cSet">${r.start ? 'Change start time' : 'Set start time'}</button>`;
@@ -938,9 +997,10 @@ function tickRun(){
   const A = ACTS[runAct], r = st.run[runAct], started = !!r.startedAt, now = Date.now();
   const el = started ? elapsed(runAct) : 0;
   if (started){
-    $('#clkLabel').textContent = `${A.name} running`;
+    $('#clkLabel').textContent = r.pausedAt ? `${A.name} held` : `${A.name} running`;
     $('#clkBig').textContent = fmtAt(el);
-    $('#clkSub').textContent = `Started ${clockOf(r.startedAt)} · now ${clockOf(now)}`;
+    $('#clkSub').textContent = r.pausedAt ? `Held for ${fmtAt((now - r.pausedAt) / 1000)} · tap Resume to carry on`
+      : `Started ${clockOf(r.startedAt)} · now ${clockOf(now)}`;
   } else if (runAct === 'a2' && st.interval.startedAt){
     $('#clkLabel').textContent = 'Interval';
     $('#clkBig').textContent = fmtAt(Math.ceil((intervalEnd() - now) / 1000));
@@ -1010,8 +1070,13 @@ $('#clkBtns').onclick = e => {
   if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); r.ended = null; if (runAct === 'a2') st.interval.startedAt = null; save(); renderRun(); }
   if (b.id === 'cSet') startSheet();
   if (b.id === 'cCancelInt') arm(b, 'Tap again to cancel', () => { st.interval.startedAt = null; save(); renderRun(); toast('Interval cancelled'); });
-  if (b.id === 'cRestart') arm(b, 'Tap again to restart', () => { r.startedAt = Date.now(); r.autoDay = todayKey(); save(); renderRun(); toast('Timer restarted from now'); });
-  if (b.id === 'cReset') arm(b, 'Tap again to reset', () => { resetAct(runAct); renderRun(); toast(`${ACTS[runAct].name} reset`); });
+  if (b.id === 'cHold'){
+    if (r.pausedAt){ r.startedAt += Date.now() - r.pausedAt; r.pausedAt = null; toast('Resumed'); }   // carry on from where it stopped
+    else { r.pausedAt = Date.now(); toast('Held. Tap Resume when the show carries on.'); }
+    save(); renderRun();
+  }
+  if (b.id === 'cRestart') arm(b, 'Tap again', () => { r.startedAt = Date.now(); r.pausedAt = null; r.autoDay = todayKey(); save(); renderRun(); toast('Timer restarted from now'); });
+  if (b.id === 'cReset') arm(b, 'Tap again', () => { resetAct(runAct); renderRun(); toast(`${ACTS[runAct].name} reset`); });
 };
 $('#endAct1').onclick = e => arm(e.target, 'Tap again to end Act 1', () => {
   resetAct('a1'); st.run.a1.ended = todayKey(); st.interval.startedAt = Date.now(); save();
@@ -1041,7 +1106,40 @@ $('#beforeList').onclick = e => {
   const li = e.target.closest('[data-id]'); if (!li) return;
   const r = st.run[runAct]; r.done[li.dataset.id] = !r.done[li.dataset.id]; save(); renderRun();
 };
+/* sync to a cue: press and hold a cue to set the act clock to that cue's time */
+let lpT = null, lpFired = false;
+['#runList', '#goneList'].forEach(sel => {
+  const ul = $(sel);
+  ul.addEventListener('pointerdown', e => {
+    const li = e.target.closest('[data-id]'); if (!li || !st.run[runAct].startedAt) return;
+    lpFired = false; clearTimeout(lpT);
+    lpT = setTimeout(() => { lpFired = true; syncSheet(li.dataset.id); }, 600);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => ul.addEventListener(ev, () => clearTimeout(lpT)));
+  ul.addEventListener('contextmenu', e => e.preventDefault());
+});
+addEventListener('scroll', () => clearTimeout(lpT), {passive: true});
+function syncSheet(id){
+  const r = st.run[runAct], t = st.tasks[ACTS[runAct].run].find(x => x.id === id);
+  if (!t) return;
+  if (t.at == null){ toast('That task has no time, so the clock cannot be set to it.'); return; }
+  const el = elapsed(runAct), diff = t.at - el;
+  openSheet(`
+    <h3>Set the clock to this cue?</h3>
+    <p>${esc(t.text)}</p>
+    <div class="bigtime">${fmtAt(t.at)}</div>
+    <p>The act clock is at ${fmtAt(el)}. It will jump ${diff >= 0 ? 'forward' : 'back'} ${fmtAt(Math.abs(diff))} so this cue is on time, and every cue after it lines up.${r.pausedAt ? ' The clock stays held until you tap Resume.' : ''}</p>
+    <div class="btnrow"><button class="btn" id="syCancel">Cancel</button><button class="btn primary" id="syGo">Set clock to ${fmtAt(t.at)}</button></div>`,
+  (sheet, close) => {
+    sheet.querySelector('#syCancel').onclick = close;
+    sheet.querySelector('#syGo').onclick = () => {
+      r.startedAt = (r.pausedAt || Date.now()) - t.at * 1000;
+      save(); close(); renderRun(); toast(`Clock set to ${fmtAt(t.at)}`);
+    };
+  });
+}
 $('#runList').onclick = $('#goneList').onclick = e => {
+  if (lpFired){ lpFired = false; return; }   // that press opened the sync sheet
   const li = e.target.closest('[data-id]'); if (!li) return;
   const r = st.run[runAct], id = li.dataset.id;
   if ($('#recMode').checked){
@@ -1061,7 +1159,7 @@ function startSheet(act = runAct){
     <div class="btnrow"><button class="btn" data-q="19:30">7:30 pm</button><button class="btn" data-q="13:00">1:00 pm</button><button class="btn" data-q="14:00">2:00 pm</button></div>
     <div class="btnrow"><button class="btn" id="stClear">No set time</button><button class="btn primary" id="stSave">Save</button></div>`,
   (el, close) => {
-    const done = v => { r.start = v; r.autoDay = null; r.ended = null; save(); close(); screen === 'run' ? renderRun() : renderDash(); };
+    const done = v => { r.start = v; r.autoDay = null; r.ended = null; save(); close(); screen === 'run' ? renderRun() : renderSettings(); };
     el.querySelectorAll('[data-q]').forEach(b => b.onclick = () => el.querySelector('#stIn').value = b.dataset.q);
     el.querySelector('#stClear').onclick = () => done('');
     el.querySelector('#stSave').onclick = () => done(el.querySelector('#stIn').value);
@@ -1216,17 +1314,17 @@ $('#backupFile').onchange = async e => {
       if (d.interval) st.interval.mins = d.interval;
       resetAct('a1'); resetAct('a2'); st.interval.startedAt = null; st.ticks = {};
       $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
-      save(); close(); renderHome(); toast(`Loaded ${plural(n)}`);
+      save(); close(); renderSettings(); toast(`Loaded ${plural(n)}`);
     };
   });
 };
 
 $('#newShow').onclick = e => arm(e.target, 'Tap again to clear every task', () => {
   e.target.classList.remove('armed'); e.target.textContent = 'Start a new show (clear all tasks)';
-  SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = null;
+  SECS.forEach(s => st.tasks[s.id] = []); st.show = ''; st.forWhom = ''; addSec = 'pre';
   resetAct('a1'); resetAct('a2'); st.ticks = {}; st.interval.startedAt = null;
   $('#showName').value = ''; $('#forWhom').value = '';
-  save(); go('home'); toast('Cleared. Enter the new show name.');
+  save(); go('settings'); toast('Cleared. Enter the new show name.');
 });
 
 /* ---------- print ---------- */
