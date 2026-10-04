@@ -141,6 +141,9 @@ textarea.input{resize:vertical;min-height:84px}
 .crow .cv.off{font-family:var(--body);font-weight:500;font-size:16px;color:var(--muted)}
 .crow .btn{padding:8px 14px;font-size:15px}
 .crow .k{flex:1;font-weight:600;min-width:0}
+/* Settings: show name and tasks-for in the same large type as the times, in slimmer boxes */
+#s-settings .card:has(#showName){gap:8px;padding:12px 14px}
+#showName,#forWhom{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.15;padding:5px 10px}
 #s-add .secbtn{min-height:58px;padding:8px 10px 8px 18px}
 #s-add .secbtn .nm{font-size:21px}
 #s-add .secbtn .ct{font-size:13px}
@@ -275,6 +278,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 .page .secrow{font-family:var(--display);font-weight:700;text-transform:uppercase;padding:4px 0 2px;display:flex;align-items:center;gap:12px}
 .page .secrow i{display:inline-block;width:.7em;height:.7em;border-radius:3px;background:var(--c)}
 .page .prow{display:grid;grid-template-columns:auto 4.6em 1fr;gap:.5em;align-items:baseline;padding:.18em 0;border-bottom:1px solid #ccc}
+.page .prow.notime{grid-template-columns:auto 1fr}
 .page .prow .n{font-weight:700;color:#555;min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
 .page .prow .t{font-weight:700;font-variant-numeric:tabular-nums}
 .page .pf{display:flex;justify-content:space-between;font-size:14px;color:#555;border-top:1px solid #999;padding-top:6px;margin-top:6px}
@@ -1362,10 +1366,12 @@ function buildPages(){
     if (!list.length) continue;
     if (!body || st.newPage) newPage();
     if (!fits(head(s))){ newPage(); fits(head(s)); }
+    // a section with no times at all gets no time column, so the task sits right after its number
+    const timed = list.some(t => s.kind === 'run' ? t.at != null : !!t.time);
     list.forEach((t, i) => {
-      const r = document.createElement('div'); r.className = 'prow';
+      const r = document.createElement('div'); r.className = timed ? 'prow' : 'prow notime';
       const tl = s.kind === 'run' ? (t.at != null ? fmtAt(t.at) : '') : (t.time ? fmt(t.time).replace(' ', '&#8239;') : '');
-      r.innerHTML = `<span class="n">${i + 1}</span><span class="t">${tl}</span><span>${esc(t.text)}</span>`;
+      r.innerHTML = `<span class="n">${i + 1}</span>${timed ? `<span class="t">${tl}</span>` : ''}<span>${esc(t.text)}</span>`;
       if (!fits(r)){ newPage(); fits(head(s, true)); fits(r); }
     });
   }

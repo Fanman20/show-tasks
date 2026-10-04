@@ -1,7 +1,7 @@
 ﻿// Keeps the app working backstage with no signal.
 // Pages: try the network first (so updates arrive), fall back to the saved copy.
 // Everything else (icons, fonts): use the saved copy, fetch and save if missing.
-const CACHE = 'showtasks-v12';
+const CACHE = 'showtasks-v13';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
