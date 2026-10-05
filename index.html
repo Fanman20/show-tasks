@@ -291,6 +291,10 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 .sheetpanel h3{margin:0;font-family:var(--display);font-size:26px;text-transform:uppercase}
 .sheetpanel p{margin:0;color:var(--muted)}
 .sheetpanel ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg .btn{line-height:1.2}
+.seg .btn small{font-weight:500;font-size:12px;opacity:.85}
+[data-steps]{display:flex;flex-direction:column;gap:12px}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap}
 .btnrow .btn{flex:1;min-width:110px}
 .bigtime{font-family:var(--display);font-size:56px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
@@ -1278,17 +1282,37 @@ function editSheet(t){
 }
 $('#shareBtn').onclick = () => openSheet(`
   <h3>Give this app to someone</h3>
-  <p>They only need the web address. Nothing to buy, no account.</p>
-  <ol>
-    <li>Send them the link by text or email.</li>
-    <li>They open it in Safari on their iPhone.</li>
-    <li>They tap the Share button, then <b>Add to Home Screen</b>.</li>
-  </ol>
-  <p>Each person's tasks stay on their own phone. Your list is not shared with them, and theirs is not shared with you.</p>
-  <p>To give them a copy of your tasks too, use Save backup file and send them the file. They open the app and tap Load a backup file.</p>
+  <div class="seg" role="group" aria-label="Type of phone">
+    <button class="btn" data-ph="ios" aria-pressed="true">iPhone</button>
+    <button class="btn" data-ph="android" aria-pressed="false">Android<br><small>Samsung, Pixel and others</small></button>
+  </div>
+  <div data-steps="ios">
+    <ol>
+      <li>Send them the link below by text or email.</li>
+      <li>They open it in <b>Safari</b> (not Chrome).</li>
+      <li>They tap the <b>Share</b> button (the square with an arrow), scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+      <li>They open it from the new icon.</li>
+    </ol>
+  </div>
+  <div data-steps="android" hidden>
+    <ol>
+      <li>Send them the link below by text or email.</li>
+      <li>They open it in <b>Chrome</b>.</li>
+      <li>They tap the <b>three dots</b> at the top right, then <b>Add to Home screen</b> (or <b>Install app</b>), then <b>Add</b> or <b>Install</b>.</li>
+      <li>They open it from the new icon.</li>
+    </ol>
+    <p>Using <b>Samsung Internet</b> instead? Tap the <b>three lines</b> at the bottom right, then <b>Add page to</b>, then <b>Home screen</b>.</p>
+  </div>
+  <p>They only need the web address. Nothing to buy, no account. Each person's tasks stay on their own phone, and they start with an empty app.</p>
+  <p>To give them a copy of your tasks too, use Save backup file and send them the file. They open the app and tap Load a backup file in Settings.</p>
   <div class="input" style="font-size:15px;overflow-wrap:anywhere" id="appLink">https://fanman20.github.io/show-tasks/</div>
   <button class="btn primary big wide" id="copyLink">Copy link</button>`,
   (el, close) => {
+    el.querySelector('.seg').onclick = e => {
+      const b = e.target.closest('[data-ph]'); if (!b) return;
+      el.querySelectorAll('[data-ph]').forEach(x => x.setAttribute('aria-pressed', x === b));
+      el.querySelectorAll('[data-steps]').forEach(p => p.hidden = p.dataset.steps !== b.dataset.ph);
+    };
     el.querySelector('#copyLink').onclick = () => {
       navigator.clipboard.writeText(el.querySelector('#appLink').textContent)
         .then(() => { toast('Link copied'); close(); })

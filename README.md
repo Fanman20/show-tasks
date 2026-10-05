@@ -3,7 +3,8 @@
 A free iPhone app (a web page added to the Home Screen) for backstage task lists in a theatre show.
 
 **Open it:** https://fanman20.github.io/show-tasks/
-**Install it:** open the link in **Safari**, tap the Share button, then **Add to Home Screen**.
+**Install it on an iPhone:** open the link in **Safari**, tap the Share button, then **Add to Home Screen**.
+**Install it on Android (Samsung, Pixel and others):** open the link in **Chrome**, tap the three dots at the top right, then **Add to Home screen** (or **Install app**). In **Samsung Internet**: three lines at the bottom right → **Add page to** → **Home screen**.
 
 Everything you type stays on your own phone. Nothing is uploaded, and nobody else can see your tasks.
 After the first open it works with no signal.

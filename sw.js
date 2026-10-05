@@ -1,8 +1,8 @@
 // Keeps the app working backstage with no signal.
 // Pages: ask the server for the newest copy first (so updates arrive), fall back to the saved copy.
 // Everything else (icons, fonts, PDF tools): use the saved copy, fetch and save if missing.
-const CACHE = 'showtasks-v17';
-const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
+const CACHE = 'showtasks-v18';
+const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   // 'reload' skips the browser's own cache, so a new version never saves an old page
