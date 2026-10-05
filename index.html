@@ -258,6 +258,7 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
 .toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none}
 .rec{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)}
+.rec:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--surface));font-weight:700}   /* can't miss that taps record times */
 
 /* print screen */
 .ctrl{display:flex;align-items:center;gap:12px}
@@ -561,6 +562,11 @@ try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
 st = migrate(st);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
 st.interval = st.interval || {mins:20, startedAt:null};
+// one-off: earlier versions blocked the day's auto-start after any hand start; switch to the stoppedAt rule
+if (!st.autoFix){
+  for (const a of ['a1', 'a2']){ const r = st.run[a]; if (!r.startedAt){ r.autoDay = null; r.stoppedAt = Date.now(); } }
+  st.autoFix = true;
+}
 save();
 
 /* red wings mode */
@@ -614,9 +620,17 @@ function arm(btn, armedText, fn){
 /* ---------- act timers ---------- */
 // while held, the act clock stands still at the moment Hold was pressed
 const elapsed = act => { const r = st.run[act]; return ((r.pausedAt || Date.now()) - r.startedAt) / 1000; };
+// stoppedAt remembers when an act was stopped, so a show stopped after its start time isn't auto-started again
 function resetAct(act){
   const r = st.run[act];
-  r.startedAt = null; r.pausedAt = null; r.done = {}; r.autoDay = todayKey(); save();
+  r.startedAt = null; r.pausedAt = null; r.done = {}; r.stoppedAt = Date.now(); save();
+}
+// ticks are for one performance: clear them when the app is first used on a new day
+function dailyReset(){
+  if (st.ticksDay === todayKey()) return false;
+  st.ticksDay = todayKey(); st.ticks = {};
+  for (const a of ['a1', 'a2']) if (!st.run[a].startedAt) st.run[a].done = {};
+  save(); return true;
 }
 // interval: counts down from "End Act 1", then Act 2 starts by itself
 const intervalEnd = () => st.interval.startedAt + st.interval.mins * 60e3;
@@ -634,16 +648,19 @@ function callInfo(){
 }
 function checkAuto(act){
   const r = st.run[act], now = Date.now();
-  if (r.startedAt && now - r.startedAt > 6 * 3600e3){ r.startedAt = null; r.done = {}; save(); return true; }  // last night's show
+  if (r.startedAt && now - r.startedAt > 6 * 3600e3){ resetAct(act); return true; }  // last night's show
   if (act === 'a2' && st.interval.startedAt){
     const end = intervalEnd();
     if (r.startedAt || now - end > 3 * 3600e3){ st.interval.startedAt = null; save(); return true; }
-    if (now >= end){ r.startedAt = end; r.autoDay = todayKey(); st.interval.startedAt = null; save(); return true; }
+    if (now >= end){ r.startedAt = end; r.pausedAt = null; r.autoDay = todayKey(); st.interval.startedAt = null; save(); return true; }
     return false;
   }
+  // auto-start at curtain up, unless it already did today or the act was stopped after curtain up
   if (!r.startedAt && r.start && r.autoDay !== todayKey()){
     const sched = todayAt(r.start);
-    if (now >= sched && now - sched < 3 * 3600e3){ r.startedAt = sched; r.autoDay = todayKey(); save(); return true; }
+    if (now >= sched && now - sched < 3 * 3600e3 && !(r.stoppedAt >= sched)){
+      r.startedAt = sched; r.pausedAt = null; r.autoDay = todayKey(); save(); return true;
+    }
   }
   return false;
 }
@@ -679,7 +696,12 @@ function go(name, arg, from){
   if (name === 'add') renderAddTab();
   if (name === 'order'){ timing = false; renderSection(); }
   if (name === 'settings') renderSettings();
-  if (name === 'run'){ runAct = arg || runAct; runFrom = from || 'dash'; $('#back').innerHTML = runFrom === 'order' ? '&#8249; Order' : '&#8249; Home'; renderRun(); }
+  if (name === 'run'){
+    runAct = arg || runAct; runFrom = from || 'dash';
+    $('#back').innerHTML = runFrom === 'order' ? '&#8249; Order' : '&#8249; Home';
+    $('#recMode').checked = runFrom === 'order';   // rehearsal recording only when opened by Record times, never left on for a show
+    renderRun();
+  }
   if (name === 'print') renderPrint();
   if (name !== 'run') window.scrollTo(0, 0);   // Running sets its own scroll position
 }
@@ -864,6 +886,8 @@ function renderSection(){
   const s = secOf(curSec), list = st.tasks[curSec], run = s.kind === 'run';
   $('#s-section').style.setProperty('--c', s.c);
   $('#orderChips').innerHTML = SECS.map(x => `<button class="chip" style="--c:${x.c}" data-o="${x.id}" aria-pressed="${x.id === curSec}"><i class="dot"></i>${x.name} <small>${st.tasks[x.id].length}</small></button>`).join('');
+  const on = $('#orderChips [aria-pressed="true"]'), row = $('#orderChips');   // keep the chosen section in view
+  row.scrollLeft += on.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - on.offsetWidth) / 2;
   $('#timingBtn').textContent = run ? 'Record times' : 'Timing run';
   $('#timingBtn').setAttribute('aria-pressed', timing);
   $('#secHint').textContent = timing
@@ -934,7 +958,7 @@ $('#list').addEventListener('pointerdown', e => {
 });
 
 $('#timingBtn').onclick = () => {
-  if (isRun(curSec)){ $('#recMode').checked = true; go('run', secOf(curSec).act, 'order'); return; }
+  if (isRun(curSec)){ go('run', secOf(curSec).act, 'order'); return; }
   timing = !timing; renderSection();
 };
 $('#sortBtn').onclick = () => {
@@ -1076,7 +1100,7 @@ function tickRun(){
 $('#clkBtns').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   const r = st.run[runAct];
-  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.autoDay = todayKey(); r.ended = null; if (runAct === 'a2') st.interval.startedAt = null; save(); renderRun(); }
+  if (b.id === 'cStart'){ r.startedAt = Date.now(); r.pausedAt = null; r.ended = null; if (runAct === 'a2') st.interval.startedAt = null; save(); renderRun(); }
   if (b.id === 'cSet') startSheet();
   if (b.id === 'cCancelInt') arm(b, 'Tap again to cancel', () => { st.interval.startedAt = null; save(); renderRun(); toast('Interval cancelled'); });
   if (b.id === 'cHold'){
@@ -1084,11 +1108,13 @@ $('#clkBtns').onclick = e => {
     else { r.pausedAt = Date.now(); toast('Held. Tap Resume when the show carries on.'); }
     save(); renderRun();
   }
-  if (b.id === 'cRestart') arm(b, 'Tap again', () => { r.startedAt = Date.now(); r.pausedAt = null; r.autoDay = todayKey(); save(); renderRun(); toast('Timer restarted from now'); });
+  if (b.id === 'cRestart') arm(b, 'Tap again', () => { r.startedAt = Date.now(); r.pausedAt = null; save(); renderRun(); toast('Timer restarted from now'); });
   if (b.id === 'cReset') arm(b, 'Tap again', () => { resetAct(runAct); renderRun(); toast(`${ACTS[runAct].name} reset`); });
 };
 $('#endAct1').onclick = e => arm(e.target, 'Tap again to end Act 1', () => {
-  resetAct('a1'); st.run.a1.ended = todayKey(); st.interval.startedAt = Date.now(); save();
+  resetAct('a1'); st.run.a1.ended = todayKey();
+  if (st.run.a2.startedAt) resetAct('a2');   // a leftover Act 2 timer (e.g. from a rehearsal) would skip the interval
+  st.interval.startedAt = Date.now(); save();
   toast(`Interval started · ${st.interval.mins} min`);
   go('run', 'a2');
 });
@@ -1289,7 +1315,7 @@ $('#copyText').onclick = () => {
 };
 $('#saveBackup').onclick = () => {
   const data = {app:'show-tasks', v:2, saved:new Date().toISOString(), show:st.show, forWhom:st.forWhom, tasks:st.tasks,
-    starts:{a1:st.run.a1.start, a2:st.run.a2.start}, interval:st.interval.mins, fontSize:st.fontSize, newPage:st.newPage};
+    starts:{a1:st.run.a1.start, a2:st.run.a2.start}, interval:st.interval.mins, calls:st.calls, fontSize:st.fontSize, newPage:st.newPage};
   const name = ((st.show || 'show').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'show') + '-tasks.json';
   const file = new File([JSON.stringify(data, null, 1)], name, {type:'application/json'});
   // iPhone: the share sheet lets you save to Files, AirDrop it, or send it by Messages or email
@@ -1322,6 +1348,7 @@ $('#backupFile').onchange = async e => {
         id: t.id || uid(), text: String(t.text), time: typeof t.time === 'string' ? t.time : '', at: Number.isFinite(t.at) ? t.at : null}));
       if (d.starts){ st.run.a1.start = d.starts.a1 || ''; st.run.a2.start = d.starts.a2 || ''; }
       if (d.interval) st.interval.mins = d.interval;
+      if (Array.isArray(d.calls) && d.calls.length === 3 && d.calls.every(Number.isFinite)) st.calls = d.calls;
       resetAct('a1'); resetAct('a2'); st.interval.startedAt = null; st.ticks = {};
       $('#showName').value = st.show; $('#forWhom').value = st.forWhom;
       save(); close(); renderSettings(); toast(`Loaded ${plural(n)}`);
@@ -1462,6 +1489,7 @@ $('#printDirect').onclick = () => { try { window.print(); } catch(e) { toast('Pr
 
 setInterval(() => {
   const changed = checkAuto('a1') | checkAuto('a2');
+  if (dailyReset() && screen === 'dash') renderDash();
   if (screen === 'run'){ changed ? renderRun() : tickRun(); }
   if (screen === 'dash') tickDash();
 }, 500);
@@ -1470,7 +1498,7 @@ setInterval(() => {
 const setBarH = () => document.documentElement.style.setProperty('--barh', $('.bar').offsetHeight + 'px');
 setBarH(); addEventListener('resize', setBarH);
 
-checkAuto('a1'); checkAuto('a2');
+dailyReset(); checkAuto('a1'); checkAuto('a2');
 go('dash');
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
