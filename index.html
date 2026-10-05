@@ -327,6 +327,14 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
   <!-- HOME (dashboard): quick reference during the show -->
   <section class="screen" id="s-dash" hidden>
     <div class="dashhead"><span class="for" id="dashFor"></span><span class="now" id="dashNow"></span></div>
+    <div class="card" id="dashWelcome" hidden>
+      <p class="label" style="margin:0">Getting started</p>
+      <ol class="hint" style="margin:0;padding-left:20px;font-size:15px;display:flex;flex-direction:column;gap:4px">
+        <li><b>Settings:</b> type your show name and who the tasks are for.</li>
+        <li><b>Add:</b> pick a section and dictate your tasks.</li>
+        <li><b>Order:</b> drag them into order. Then run the show from here.</li>
+      </ol>
+    </div>
     <div class="dashrun" id="dashRun"></div>
     <div class="card calls" id="dashCalls" hidden></div>
     <div>
@@ -524,26 +532,17 @@ const secOf = id => SECS.find(s => s.id === id);
 const isRun = id => secOf(id).kind === 'run';
 const pad = n => String(n).padStart(2, '0');
 
-function sample(){
-  const t = (text, time='') => ({id:uid(), text, time, at:null});
-  const r = (text, at) => ({id:uid(), text, time:'', at});
+// a first-time user starts with an empty show: no tasks, no names, no start time
+function fresh(){
   return {
-    v:2, show:'Example Show', forWhom:'ASM Stage Left', fontSize:36, newPage:true, printSecs:SECS.map(s => s.id),
-    run:{a1:{start:'19:30', startedAt:null, done:{}, autoDay:null}, a2:{start:'', startedAt:null, done:{}, autoDay:null}},
-    tasks:{
-      pre:[t('Sweep and mop stage','18:30'), t('Check all props on SL table','18:45'), t('Radio check with SM','19:15')],
-      b1:[t('Preset chair DS centre'), t('Set tea trolley SL'), t('Check sightlines are clear'), t('Standing by, tell SM')],
-      a1:[r('Hand umbrella to Lead', 270), r('Fly in drop for Scene 2', 660), r('Strike tea trolley in blackout', 1095), r('Standby smoke machine', 1560), r('Set bench for Scene 4', 2490)],
-      b2:[t('Reset hall table'), t('Letter on tray'), t('Clear Act 1 props off SL table')],
-      a2:[r('Hand letter to Maid', 180), r('Thunder sheet cue', 900), r('Flowers ready for bows', 2280)],
-      post:[t('Collect all hand props'), t('Lock prop cabinet'), t('Ghost light on')],
-    }
+    v:2, show:'', forWhom:'', fontSize:36, newPage:true, printSecs:SECS.map(s => s.id),
+    run:{a1:{start:'', startedAt:null, done:{}, autoDay:null}, a2:{start:'', startedAt:null, done:{}, autoDay:null}},
+    tasks:Object.fromEntries(SECS.map(s => [s.id, []]))
   };
 }
 function migrate(s){
-  if (!s || !s.tasks) return sample();
+  if (!s || !s.tasks) return fresh();
   if (s.v === 2) return s;
-  if (s.show === 'Example Show') return sample();
   // version 1 had four sections with clock times; act times become time into the act
   const base = {a1:'19:30', a2:'20:45'};
   for (const a of ['a1','a2']) (s.tasks[a] || []).forEach(t => {
@@ -557,17 +556,9 @@ function migrate(s){
   s.v = 2;
   return s;
 }
-// one-off: quick test cues so the Running page can be tried without waiting minutes
-function addTestCues(s){
-  if (s.testCuesAdded) return s;
-  for (const a of ['a1', 'a2'])
-    s.tasks[a].unshift(...[10, 20, 30, 35].map((at, i) => ({id:uid(), text:`Test cue ${i + 1} (${at} s)`, time:'', at})));
-  s.testCuesAdded = true;
-  return s;
-}
 let st;
 try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
-st = addTestCues(migrate(st));
+st = migrate(st);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} };
 st.interval = st.interval || {mins:20, startedAt:null};
 save();
@@ -709,6 +700,7 @@ const doneCount = sec => { const d = doneMap(sec); return st.tasks[sec].filter(t
 
 function renderDash(){
   $('#dashFor').textContent = st.forWhom || '';
+  $('#dashWelcome').hidden = SECS.some(s => st.tasks[s.id].length);
   $('#dashRun').innerHTML = Object.entries(ACTS).map(([id, a]) => `
     <button class="runbtn" style="--c:${a.c}" data-run="${id}"><span class="nm">Run ${a.name}</span><small></small></button>`).join('');
   $('#dashChecks').innerHTML = CHECKS.map(id => {
@@ -763,6 +755,14 @@ function renderSettings(){
 }
 $('#showName').oninput = e => { st.show = e.target.value; save(); };
 $('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
+// tapping in selects the whole name, so typing replaces it; tapping away without typing keeps it
+['#showName', '#forWhom'].forEach(sel => {
+  const el = $(sel); let justTapped = false;
+  const selectAll = () => el.setSelectionRange(0, el.value.length);
+  el.addEventListener('focus', () => { justTapped = true; setTimeout(selectAll, 10); });
+  el.addEventListener('pointerup', e => { if (justTapped){ e.preventDefault(); selectAll(); justTapped = false; } });   // iPhone would otherwise drop the selection on lift
+  el.addEventListener('blur', () => justTapped = false);
+});
 $('#setTimes').onclick = e => {
   const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start);
   if (e.target.closest('[data-int]')) intervalSheet();
