@@ -487,7 +487,9 @@ html{overflow-anchor:none}   /* the Running page positions the list itself; stop
       </div>
       <label class="toggle">Start each section on a new page <input type="checkbox" id="newPage"></label>
       <button class="btn primary big wide" id="doPrint">Print · A4 landscape</button>
+      <p class="hint" id="printHint">Makes a PDF of the pages below, then opens the share menu. Choose Print there, or Save to Files.</p>
       <p class="pagecount" id="pageCount"></p>
+      <button class="btn" id="printDirect">Print directly instead (computers)</button>
     </div>
     <div id="preview"></div>
   </section>
@@ -1344,8 +1346,10 @@ function renderPrint(){
   $('#fontSize').value = st.fontSize; $('#newPage').checked = st.newPage;
   $('#printChips').innerHTML = SECS.map(s => `<button class="chip" style="--c:${s.c}" data-p="${s.id}" aria-pressed="${st.printSecs.includes(s.id)}"><i class="dot"></i>${s.name}</button>`).join('');
   buildPages();
+  loadLibs().catch(() => {});   // fetch the PDF tools now, while there's signal, so they're saved for offline use
 }
 function buildPages(){
+  pdfReset();   // the pages changed, so any PDF already made is out of date
   $('#fontOut').textContent = st.fontSize + ' pt';
   const pv = $('#preview'); pv.innerHTML = '';
   const px = st.fontSize * 96 / 72;
@@ -1384,7 +1388,73 @@ function scalePages(){
   document.querySelectorAll('.sheet').forEach(s => s.querySelector('.page').style.setProperty('--s', s.clientWidth / 1123));
 }
 addEventListener('resize', scalePages);
-$('#doPrint').onclick = () => { try { window.print(); } catch(e) { toast('Printing is not available here'); } };
+/* iPhone Safari blocks or ignores pages that start printing themselves, so Print makes a PDF of the
+   preview pages and hands it to the share menu, where Print always works. Two taps: one to make the
+   PDF, one to share it, because Safari only opens the share menu straight after a tap. */
+const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+let libsReady = null, pdfFile = null, pdfBusy = false;
+function loadLibs(){
+  return libsReady = libsReady || Promise.all(LIBS.map(src => new Promise((ok, fail) => {
+    const sc = document.createElement('script'); sc.src = src; sc.onload = ok;
+    sc.onerror = () => { libsReady = null; fail(new Error('load')); };
+    document.head.appendChild(sc);
+  })));
+}
+function pdfReset(){
+  pdfFile = null;
+  $('#doPrint').textContent = 'Print · A4 landscape';
+  $('#doPrint').disabled = false;
+  $('#printHint').textContent = 'Makes a PDF of the pages below, then opens the share menu. Choose Print there, or Save to Files.';
+}
+async function makePdf(){
+  await loadLibs();
+  const pdf = new window.jspdf.jsPDF({orientation: 'landscape', unit: 'mm', format: 'a4'});
+  const host = document.createElement('div');   // full-size, unscaled copy of each page, off screen
+  host.style.cssText = 'position:fixed;left:-20000px;top:0;width:1123px';
+  document.body.appendChild(host);
+  try {
+    const pages = [...document.querySelectorAll('#preview .page')];
+    for (let i = 0; i < pages.length; i++){
+      const copy = pages[i].cloneNode(true);
+      copy.style.transform = 'none'; copy.style.position = 'relative';
+      host.replaceChildren(copy);
+      const canvas = await window.html2canvas(copy, {scale: 2, backgroundColor: '#ffffff', width: 1123, height: 794, logging: false});
+      if (i) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 297, 210);
+    }
+  } finally { host.remove(); }
+  const name = ((st.show || 'show').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'show') + '-tasks.pdf';
+  return new File([pdf.output('blob')], name, {type: 'application/pdf'});
+}
+async function sharePdf(){
+  if (navigator.canShare && navigator.canShare({files: [pdfFile]})){
+    try { await navigator.share({files: [pdfFile], title: pdfFile.name}); }
+    catch(e){ if (e.name !== 'AbortError') toast('Could not open the share menu. Tap the button again.'); }
+    return;
+  }
+  // no share menu (e.g. a computer): open the PDF so it can be printed from there
+  const url = URL.createObjectURL(pdfFile);
+  const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.download = pdfFile.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+$('#doPrint').onclick = async () => {
+  if (pdfBusy) return;
+  if (pdfFile){ sharePdf(); return; }
+  if (!document.querySelector('#preview .page')){ toast('Nothing to print. Pick a section with tasks in it.'); return; }
+  pdfBusy = true;
+  $('#doPrint').disabled = true; $('#doPrint').textContent = 'Preparing pages…';
+  try {
+    pdfFile = await makePdf();
+    $('#doPrint').textContent = 'Tap to print or share the PDF';
+    $('#printHint').textContent = 'Ready. Tap the button, then choose Print in the share menu.';
+  } catch(e){
+    pdfReset();
+    toast(e.message === 'load' ? 'Connect to the internet once so the app can set up printing, then try again.' : 'Could not make the pages. Try again.', 4000);
+  } finally { pdfBusy = false; $('#doPrint').disabled = false; }
+};
+$('#printDirect').onclick = () => { try { window.print(); } catch(e) { toast('Printing is not available here'); } };
 
 setInterval(() => {
   const changed = checkAuto('a1') | checkAuto('a2');
