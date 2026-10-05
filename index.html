@@ -755,14 +755,15 @@ function renderSettings(){
 }
 $('#showName').oninput = e => { st.show = e.target.value; save(); };
 $('#forWhom').oninput = e => { st.forWhom = e.target.value; save(); };
-// tapping in selects the whole name, so typing replaces it; tapping away without typing keeps it
-['#showName', '#forWhom'].forEach(sel => {
-  const el = $(sel); let justTapped = false;
-  const selectAll = () => el.setSelectionRange(0, el.value.length);
+// tapping in selects the whole entry, so typing replaces it; tapping away without typing keeps it
+function selectOnTap(el){
+  let justTapped = false;
+  const selectAll = () => { try { el.setSelectionRange(0, el.value.length); } catch(e){ el.select(); } };   // number boxes only allow select()
   el.addEventListener('focus', () => { justTapped = true; setTimeout(selectAll, 10); });
   el.addEventListener('pointerup', e => { if (justTapped){ e.preventDefault(); selectAll(); justTapped = false; } });   // iPhone would otherwise drop the selection on lift
   el.addEventListener('blur', () => justTapped = false);
-});
+}
+['#showName', '#forWhom'].forEach(sel => selectOnTap($(sel)));
 $('#setTimes').onclick = e => {
   const b = e.target.closest('[data-start]'); if (b) startSheet(b.dataset.start);
   if (e.target.closest('[data-int]')) intervalSheet();
@@ -776,6 +777,7 @@ function callsSheet(){
     <div class="card curtain">${inp('c1', st.calls[0], 'First call')}${inp('c2', st.calls[1], 'Second call')}${inp('c3', st.calls[2], 'Beginners')}</div>
     <button class="btn primary big wide" id="cSave">Save</button>`,
   (el, close) => {
+    el.querySelectorAll('#c1, #c2, #c3').forEach(selectOnTap);
     el.querySelector('#cSave').onclick = () => {
       st.calls = ['#c1', '#c2', '#c3'].map((s, i) => Math.max(1, parseInt(el.querySelector(s).value) || [30, 15, 5][i]));
       save(); close(); renderSettings();
@@ -790,6 +792,7 @@ function intervalSheet(){
     <div class="btnrow"><button class="btn" data-m="15">15 min</button><button class="btn" data-m="20">20 min</button><button class="btn" data-m="25">25 min</button></div>
     <button class="btn primary big wide" id="intSave">Save</button>`,
   (el, close) => {
+    selectOnTap(el.querySelector('#intIn'));
     el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => el.querySelector('#intIn').value = b.dataset.m);
     el.querySelector('#intSave').onclick = () => {
       st.interval.mins = Math.max(1, parseInt(el.querySelector('#intIn').value) || 20);
@@ -1213,6 +1216,7 @@ function atSheet(t){
     <div class="btnrow"><button class="btn" id="asClear">Clear time</button><button class="btn primary" id="asDone">Done</button></div>`,
   (el, close) => {
     const done = v => { t.at = v; save(); close(); renderSection(); };
+    el.querySelectorAll('#asMin, #asSec').forEach(selectOnTap);
     if (running) el.querySelector('#asNow').onclick = () => done(Math.floor(elapsed(act)));
     el.querySelector('#asClear').onclick = () => done(null);
     el.querySelector('#asDone').onclick = () => done(readMinSec(el.querySelector('#asMin'), el.querySelector('#asSec')));
